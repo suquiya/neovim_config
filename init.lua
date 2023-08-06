@@ -2,6 +2,34 @@ vim.loader.enable()
 
 vim.opt.tabstop=3
 vim.opt.shiftwidth=3
+
+
+function key_map(mode,keys,to,_opts)
+	local opts = {noremap = true,silent=false}
+	if _opts then 
+		opts = vim.tbl_extend('force',opts,_opts)
+	end
+	vim.keymap.set(mode,keys,to,opts)
+end
+local key_binds = {
+	{'i','jj','<Esc>'},
+	{'n','<C-s>',':w<CR>'},
+	{'i','<C-z>','<C-o>u'},
+	{'n','<C-z>','u'},
+	{'i','yy','<C-o>yy'},
+	{'i','<C-v>','<C-o>p'},
+	--{},
+	--{},
+	--{},
+	--{},
+	--{},
+	--{},
+}
+
+for _i,bind in ipairs(key_binds) do
+	key_map(bind[1],bind[2],bind[3],bind[4])
+end
+
 -- Lazyのセットアップ（インストールできていなかったら取り寄せ）
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -28,7 +56,32 @@ require("lazy").setup({
 	},
 	{
 		"simrat39/rust-tools.nvim"
-	}
+	},
+	{
+		"nvim-lua/plenary.nvim"
+	},
+	{
+		"nvim-treesitter/nvim-treesitter",
+		build = ":TSUpdate",
+		config = function()
+			require('nvim-treesitter.configs').setup{
+				ensure_installed = {"lua","rust"},
+				auto_install=true,
+				highlight = {
+					enable = true,
+				},
+				ident = {
+					enable=true,
+				},
+			}
+		end
+	},
+	{
+		'windwp/nvim-autopairs',
+   	event = "InsertEnter",
+		opts = {} -- this is equalent to setup({}) function
+	},
+	{ "lukas-reineke/indent-blankline.nvim" },
 },{
 	defaults={lazy=true}
 })
