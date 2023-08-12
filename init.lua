@@ -188,5 +188,5 @@ cmp.setup({
 		{ name = 'nvim_lsp', keyword_length = 1, priority = 10 }, -- from language server
 		{name="nvim_lsp"},
 		{name='buffer'}
-	})
+	}
 })
