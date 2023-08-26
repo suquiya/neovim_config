@@ -1,11 +1,31 @@
 vim.loader.enable()
 
+local g = vim.g
+g.loaded_gzip = 1
+g.loaded_tar = 1
+g.loaded_tarPlugin = 1
+g.loaded_zip = 1
+g.loaded_zipPlugin = 1
+
+g.loaded_vimball = 1
+g.loaded_vimballPlugin = 1
+
+g.loaded_netrw = 1
+g.loaded_netrwPlugin = 1
+g.loaded_netrwSettings = 1
+g.loaded_netrwFileHandlers = 1
+
+g.loaded_2html_plugin = 1
+g.loaded_spellfile_plugin = 1
+g.loaded_rrhelper = 1
+
 vim.opt.tabstop=3
 vim.opt.shiftwidth=3
 
+
 local map = function(mode,keys,to,_opts)
 	local opts = {noremap = true,silent=false}
-	if _opts then 
+	if _opts then
 		opts = vim.tbl_extend('force',opts,_opts)
 	end
 	vim.keymap.set(mode,keys,to,opts)
@@ -19,7 +39,9 @@ map('n','<C-s>',':w<CR>')
 map('i','<C-s>','<C-o>:w<CR>')
 map('i','<C-z>','<C-o>u')
 map('n','<C-z>','u')
-map('i','yy','<C-o>yy')
+map('i','<C-y>','<C-o><C-R>')
+map('n','<C-y>','<C-R>')
+map('i','<C-g>','<C-o>yy')
 map('i','<C-p>p','<C-o>p')
 map('n','<F3>',':noh<CR>')
 map('i','<F3>','<C-o>:noh<CR>')
@@ -27,9 +49,11 @@ map('n','<leader>mo',':Mason<CR>')
 map('n','<leader>lo',":Lazy<CR>")
 map('n','<leader>lu',":Lazy update<CR>")
 map('n','<C-\\>',':vs<CR>')
+map('i','<C-\\>','<C-o>:vs<CR>')
 map('n','<C-x>',':q<CR>')
-map('n','qqq',':q<CR>')
-map('n','qqa',':qa<CR>')
+map('n','<C-c>',':q!<CR>')
+map('n','<leader>qq',':q<CR>')
+map('n','<leader>qa',':qa<CR>')
 
 -- Lazyのセットアップ（インストールできていなかったら取り寄せ）
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -44,16 +68,53 @@ if not vim.loop.fs_stat(lazypath) then
 	})
 end
 vim.opt.rtp:prepend(lazypath)
+local mason_lsp_opt = {
+	ensure_installed = {
+		"rust_analyzer",
+		"lua_ls"
+	}
+}
 
 require("lazy").setup({
 	{
-		"williamboman/mason.nvim"
+		"williamboman/mason.nvim",
 	},
 	{
 		"williamboman/mason-lspconfig.nvim",
+		event="VeryLazy",
+		opts=mason_lsp_opt,
+		config=function(_,_opts)
+			require("mason").setup{}
+			require("mason-lspconfig").setup(_opts)
+		end
 	},
 	{
-		"neovim/nvim-lspconfig"
+		"neovim/nvim-lspconfig",
+		config = function()
+			local lspconfig = require("lspconfig")
+			local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
+			lspconfig.lua_ls.setup({
+				capabilities = capabilities,
+				settings = {
+					Lua = {
+						diagnostics = {
+							globals = {"vim"}
+						},
+						workspace={
+							library = vim.api.nvim_get_runtime_file("",true)
+						},
+						hint = {enable = true},
+						format = {
+							enable = true,
+							defaultConfig = {
+								indent_stype = "tab",
+								indent_size = "3"
+							}
+						}
+					}
+				}
+			})
+		end
 	},
 	{
 		"simrat39/rust-tools.nvim",
@@ -89,11 +150,16 @@ require("lazy").setup({
 				},
 			})
 		end,
-		ft="rs"
+		ft="rs",
+		dependencies = {
+			"neovim/nvim-lspconfig",
+		}
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
+		cmd = {"TSInstall","TSUpdate"},
+		event="VeryLazy",
 		config = function()
 			require('nvim-treesitter.configs').setup{
 				ensure_installed = {"lua","rust"},
@@ -106,7 +172,7 @@ require("lazy").setup({
 				},
 			}
 			-- require 'nvim-treesitter.install'.prefer_git = false
-		end
+		end,
 	},
 	{
 		'windwp/nvim-autopairs',
@@ -115,7 +181,7 @@ require("lazy").setup({
 	},
 	{
 		"lukas-reineke/indent-blankline.nvim",
-		event="BufRead",
+		event="VeryLazy",
 		config = function()
 			require("indent_blankline").setup {
 				-- for example, context is off by default, use this to turn it on
@@ -137,8 +203,19 @@ require("lazy").setup({
 	{
 		'nvim-telescope/telescope.nvim',
 		tag = '0.1.2',
-		--dependencies = { 'nvim-lua/plenary.nvim' },
-		cmd="Telescope"
+		--dependencies = { 'nvim-lua/plenary.nvim', },
+		event="VeryLazy",
+		cmd="Telescope",
+		opts={},
+		config = function(_,_opts)
+			require('telescope').setup(_opts)
+			local builtin = require('telescope.builtin')
+			local map_opts = {noremap = true,silent=false}
+			vim.keymap.set('n','<leader>ff',builtin.find_files, map_opts)
+			vim.keymap.set('n','<leader>fg',builtin.live_grep,map_opts)
+			vim.keymap.set('n','<leader>fb',builtin.buffers,map_opts)
+			vim.keymap.set('n','<leader>fh',builtin.help_tags,map_opts)
+		end
 	},
 	{
 		'nmac427/guess-indent.nvim',
@@ -229,26 +306,33 @@ require("lazy").setup({
 	{'hrsh7th/cmp-path',event={"InsertEnter","CmdlineEnter"}},
 	{ "hrsh7th/cmp-nvim-lua",event="InsertEnter *.lua"},
 	{'hrsh7th/cmp-cmdline',event="CmdlineEnter"},
-	
 	{ "L3MON4D3/LuaSnip",event="InsertEnter"},
 	{ "saadparwaiz1/cmp_luasnip",event="InsertEnter"},
-	{ 'echasnovski/mini.bufremove', version = false, event="BufRead"},
+	{ 'echasnovski/mini.bufremove', version = false, event="VeryLazy"},
 	{
 		"kwkarlwang/bufresize.nvim",
-		event="VimEnter"
+		event="VeryLazy"
 	},
 	{
 		"Shatur/neovim-session-manager",
 		config = function()
-		local path = require('plenary.path');
 		local config = require('session_manager.config')
 		require('session_manager').setup({
 			autoload_mode = config.AutoloadMode.LastSession,
 			autosave_last_session = true,
 		})
 		end,
-		event="VimEnter"
+		event="VeryLazy"
 	},
+	{
+		"folke/which-key.nvim",
+		cmd = "WhichKey",
+		config = function()
+			vim.o.timeout = true
+			vim.o.timeoutlen = 300
+		end,
+		opts = {}
+	}
 },{
 	defaults={lazy=true}
 })
@@ -259,11 +343,4 @@ vim.opt.listchars:append "eol:↴"
 vim.opt.listchars:append "tab:--"
 vim.opt.listchars:append "trail:*"
 
-require("mason").setup();
-
-require("mason-lspconfig").setup({
-	ensure_installed = {
-		 "rust_analyzer"
-	 },
-});
 
