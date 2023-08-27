@@ -22,7 +22,6 @@ g.loaded_rrhelper = 1
 vim.opt.tabstop=3
 vim.opt.shiftwidth=3
 
-
 local map = function(mode,keys,to,_opts)
 	local opts = {noremap = true,silent=false}
 	if _opts then
@@ -54,6 +53,16 @@ map('n','<C-x>',':q<CR>')
 map('n','<C-c>',':q!<CR>')
 map('n','<leader>qq',':q<CR>')
 map('n','<leader>qa',':qa<CR>')
+map('n','gx',":Neotree toggle<CR>")
+map('n','<leader>ex',":Neotree toggle<CR>")
+map('n','<leader>eb',":Neotree buffer current<CR>")
+map('n','<leader>eg',":Neotree git_status current<CR>")
+map('n','<C-l>',"<C-w><C-l>")
+map('n','<C-Right>',"<C-w><C-l>")
+map('n','<C-k>',"<C-w><C-k>")
+map('n','<C-Left>',"<C-w><C-k>")
+map('n','<M-e>',":Neotree toggle<CR>")
+map('i','<M-e>',":Neotree toggle<CR>")
 
 -- Lazyのセットアップ（インストールできていなかったら取り寄せ）
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -90,9 +99,9 @@ require("lazy").setup({
 	},
 	{
 		"neovim/nvim-lspconfig",
+		event="VeryLazy",
 		config = function()
 			local lspconfig = require("lspconfig")
-			local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
 			lspconfig.lua_ls.setup({
 				capabilities = capabilities,
 				settings = {
@@ -316,13 +325,81 @@ require("lazy").setup({
 	{
 		"Shatur/neovim-session-manager",
 		config = function()
-		local config = require('session_manager.config')
-		require('session_manager').setup({
-			autoload_mode = config.AutoloadMode.LastSession,
-			autosave_last_session = true,
-		})
+			local config = require('session_manager.config')
+			require('session_manager').setup({
+				autoload_mode = config.AutoloadMode.LastSession,
+				autosave_last_session = true,
+			})
 		end,
 		event="VeryLazy"
+	},
+	{
+		'akinsho/bufferline.nvim',
+		version = "*",
+		event="VeryLazy",
+		opts = {},
+		config = function(_,_opts)
+			require("bufferline").setup(_opts)
+		end,
+		dependencies = {
+			{
+				'nvim-tree/nvim-web-devicons',
+			},
+			{
+				"nvim-neo-tree/neo-tree.nvim",
+				branch = "v3.x",
+				dependencies = {
+					"nvim-lua/plenary.nvim",
+					"nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+					"MunifTanjim/nui.nvim",
+				},
+				cmd="Neotree",
+				opts = {
+					close_if_last_window=true,
+					source_selector = {
+						winbar = true,
+						status = true
+					},
+					filesystem = {
+						window = {
+							width = 30,
+							mappings = {
+								["<F5>"] = "refresh",
+								["+"] = "open",
+							},
+						},
+						filtered_items = {
+							hide_dotfiles = false
+						},
+						hijack_netrw_behavior = "open_default",
+						follow_current_file = {enabled = true}
+					}
+				}
+			},
+			{
+				'nvim-lualine/lualine.nvim',
+				opts = {
+					options = {
+						theme = "dracula",
+						section_separators = {
+							right = "",
+							left = ""
+						},
+					},
+					sections = {
+						lualine_a = {'mode'},
+						lualine_b = {'filename'},
+						lualine_c = {'branch', 'diff'},
+						lualine_x = {'encoding'},
+						lualine_y = {'filetype'},
+						lualine_z = {'location'}
+					},
+				},
+				config = function(_,opts)
+					require('lualine').setup(opts)
+				end
+			}
+		}
 	},
 	{
 		"folke/which-key.nvim",
@@ -342,5 +419,6 @@ vim.opt.listchars:append "space:."
 vim.opt.listchars:append "eol:↴"
 vim.opt.listchars:append "tab:--"
 vim.opt.listchars:append "trail:*"
+
 
 
