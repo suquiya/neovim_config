@@ -29,7 +29,6 @@ local map = function(mode,keys,to,_opts)
 	end
 	vim.keymap.set(mode,keys,to,opts)
 end
-
 vim.g.mapleader=" "
 
 map('i','jj','<Esc>')
@@ -77,53 +76,56 @@ if not vim.loop.fs_stat(lazypath) then
 	})
 end
 vim.opt.rtp:prepend(lazypath)
-local mason_lsp_opt = {
-	ensure_installed = {
-		"rust_analyzer",
-		"lua_ls"
-	}
-}
 
 require("lazy").setup({
 	{
-		"williamboman/mason.nvim",
-	},
-	{
 		"williamboman/mason-lspconfig.nvim",
 		event="VeryLazy",
-		opts=mason_lsp_opt,
+		opts={
+			ensure_installed = {
+				"rust_analyzer",
+				"lua_ls"
+			}
+		},
 		config=function(_,_opts)
-			require("mason").setup{}
 			require("mason-lspconfig").setup(_opts)
-		end
-	},
-	{
-		"neovim/nvim-lspconfig",
-		event="VeryLazy",
-		config = function()
-			local lspconfig = require("lspconfig")
-			lspconfig.lua_ls.setup({
-				capabilities = capabilities,
+			local lspconf = require("lspconfig")
+			local gcap = require("cmp_nvim_lsp").default_capabilities()
+			lspconf.lua_ls.setup({
+				capabilities = gcap,
 				settings = {
 					Lua = {
-						diagnostics = {
-							globals = {"vim"}
-						},
-						workspace={
-							library = vim.api.nvim_get_runtime_file("",true)
-						},
 						hint = {enable = true},
 						format = {
 							enable = true,
-							defaultConfig = {
-								indent_stype = "tab",
-								indent_size = "3"
+							defaultconfig = {
+								indent_style = "tab",
+								indent_size = "2"
 							}
 						}
 					}
 				}
 			})
-		end
+		end,
+		dependencies= {
+			{
+				"williamboman/mason.nvim",
+				opts={},
+				config=function(_,opts)
+					require('mason').setup(opts)
+				end
+			},
+			{
+				"neovim/nvim-lspconfig",
+				config=function()
+					local signs = { Error = "×", Warn = "", Hint = "!", Info = "" }
+					for type, icon in pairs(signs) do
+						local hl = "DiagnosticSign" .. type
+						vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+					end
+				end
+			},
+		}
 	},
 	{
 		"simrat39/rust-tools.nvim",
@@ -159,10 +161,7 @@ require("lazy").setup({
 				},
 			})
 		end,
-		ft="rs",
-		dependencies = {
-			"neovim/nvim-lspconfig",
-		}
+		ft = {"rs","rust"}
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
@@ -377,28 +376,16 @@ require("lazy").setup({
 				}
 			},
 			{
-				'nvim-lualine/lualine.nvim',
-				opts = {
-					options = {
-						theme = "dracula",
-						section_separators = {
-							right = "",
-							left = ""
-						},
-					},
-					sections = {
-						lualine_a = {'mode'},
-						lualine_b = {'filename'},
-						lualine_c = {'branch', 'diff'},
-						lualine_x = {'encoding'},
-						lualine_y = {'filetype'},
-						lualine_z = {'location'}
-					},
-				},
-				config = function(_,opts)
-					require('lualine').setup(opts)
-				end
-			}
+				'echasnovski/mini.statusline',
+				version = false,
+				event="BufEnter",
+				config=function(_,_)
+					require('mini.statusline').setup()
+				end,
+				dependencies = {
+					'nvim-tree/nvim-web-devicons',
+				}
+			},
 		}
 	},
 	{
@@ -413,6 +400,8 @@ require("lazy").setup({
 },{
 	defaults={lazy=true}
 })
+
+vim.opt.number = true
 
 vim.opt.list = true
 vim.opt.listchars:append "space:."
