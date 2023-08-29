@@ -80,7 +80,7 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
 	{
 		"williamboman/mason-lspconfig.nvim",
-		event="VeryLazy",
+		event={"VimEnter","BufReadPre"},
 		opts={
 			ensure_installed = {
 				"rust_analyzer",
@@ -95,7 +95,13 @@ require("lazy").setup({
 				capabilities = gcap,
 				settings = {
 					Lua = {
+						diagnostics={
+							globals="vim"
+						},
 						hint = {enable = true},
+						workspace= {
+							library=vim.api.nvim_get_runtime_file("",true)
+						},
 						format = {
 							enable = true,
 							defaultconfig = {
@@ -110,23 +116,25 @@ require("lazy").setup({
 		dependencies= {
 			{
 				"williamboman/mason.nvim",
+				event={"VimEnter"},
 				opts={},
 				config=function(_,opts)
 					require('mason').setup(opts)
 				end
 			},
-			{
-				"neovim/nvim-lspconfig",
-				config=function()
-					local signs = { Error = "×", Warn = "", Hint = "!", Info = "" }
-					for type, icon in pairs(signs) do
-						local hl = "DiagnosticSign" .. type
-						vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-					end
-				end
-			},
-		}
-	},
+	{
+		"neovim/nvim-lspconfig",
+		config=function()
+			local signs = { Error = "E", Warn = "", Hint = "H", Info = "" }
+			for type, icon in pairs(signs) do
+				local hl = "DiagnosticSign" .. type
+				vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+			end
+		end,
+		event="VimEnter"
+	}
+},
+},
 	{
 		"simrat39/rust-tools.nvim",
 		config = function()
@@ -395,7 +403,7 @@ require("lazy").setup({
 			vim.o.timeout = true
 			vim.o.timeoutlen = 300
 		end,
-		opts = {}
+		opts = {},
 	}
 },{
 	defaults={lazy=true}
