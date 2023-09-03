@@ -34,7 +34,8 @@ vim.g.mapleader=" "
 map('i','jj','<Esc>')
 map('i','<C-j><C-k>','<Esc>')
 map('n','<C-s>',':w<CR>')
-map('i','<C-s>','<C-o>:w<CR>')
+map('i','<C-s>','<Esc>:w<CR>')
+map('i','<M-s>','<C-o>:w<CR>')
 map('i','<C-z>','<C-o>u')
 map('n','<C-z>','u')
 map('i','<C-y>','<C-o><C-R>')
@@ -61,7 +62,7 @@ map('n','<C-Right>',"<C-w><C-l>")
 map('n','<C-k>',"<C-w><C-k>")
 map('n','<C-Left>',"<C-w><C-k>")
 map('n','<M-e>',":Neotree toggle<CR>")
-map('i','<M-e>',":Neotree toggle<CR>")
+map('i','<M-e>',"<C-o>:Neotree toggle<CR>")
 
 -- Lazyのセットアップ（インストールできていなかったら取り寄せ）
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -73,7 +74,7 @@ if not vim.loop.fs_stat(lazypath) then
 	"https://github.com/folke/lazy.nvim.git",
 	"--branch=stable", -- latest stable release
 	lazypath,
-	})
+})
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -118,25 +119,23 @@ require("lazy").setup({
 				"williamboman/mason.nvim",
 				event={"VimEnter"},
 				opts={},
-				config=function(_,opts)
-					require('mason').setup(opts)
-				end
 			},
-	{
-		"neovim/nvim-lspconfig",
-		config=function()
-			local signs = { Error = "E", Warn = "", Hint = "H", Info = "" }
-			for type, icon in pairs(signs) do
-				local hl = "DiagnosticSign" .. type
-				vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-			end
-		end,
-		event="VimEnter"
-	}
-},
-},
+			{
+				"neovim/nvim-lspconfig",
+				config=function()
+					local signs = { Error = "󰅚", Warn = "󰀪", Hint = "󰌶", Info = "" }
+					for type, icon in pairs(signs) do
+						local hl = "DiagnosticSign" .. type
+						vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+					end
+				end,
+				event="VimEnter"
+			}
+		},
+	},
 	{
 		"simrat39/rust-tools.nvim",
+		event="BufReadPre *.rs",
 		config = function()
 			local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
 			local rt = require("rust-tools")
@@ -169,7 +168,10 @@ require("lazy").setup({
 				},
 			})
 		end,
-		ft = {"rs","rust"}
+	},
+	{
+		'kkharji/lspsaga.nvim',
+		event="VimEnter",
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
@@ -391,7 +393,8 @@ require("lazy").setup({
 					require('mini.statusline').setup()
 				end,
 				dependencies = {
-					'nvim-tree/nvim-web-devicons',
+					{'nvim-tree/nvim-web-devicons'},
+					{'lewis6991/gitsigns.nvim',opts={}}
 				}
 			},
 		}
@@ -404,6 +407,13 @@ require("lazy").setup({
 			vim.o.timeoutlen = 300
 		end,
 		opts = {},
+	},
+	{
+		'mvllow/modes.nvim',
+		tag = 'v0.2.0',
+		config = function()
+			require('modes').setup()
+		end
 	}
 },{
 	defaults={lazy=true}
