@@ -1,6 +1,6 @@
 # Suquiya's neovim config
 This is the neovim config of me(suquiya).
-Setup for: Rust
+Setup for: Rust, little for lua
 
 # License
 This is licensed under MIT License.

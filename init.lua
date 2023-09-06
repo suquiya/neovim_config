@@ -172,6 +172,57 @@ require("lazy").setup({
 	{
 		'kkharji/lspsaga.nvim',
 		event="VimEnter",
+		config=function()
+			local lspsaga = require 'lspsaga'
+			lspsaga.setup {
+			debug = false,
+			use_saga_diagnostic_sign = true,
+			-- diagnostic sign
+			error_sign = "󰅚",
+			warn_sign = "",
+			hint_sign = "",
+			infor_sign = "",
+			diagnostic_header_icon = "   ",
+			-- code action title icon
+			code_action_icon = " ",
+			code_action_prompt = {
+				enable = true,
+				sign = true,
+				sign_priority = 40,
+				virtual_text = true,
+			},
+			finder_definition_icon = "  ",
+			finder_reference_icon = "  ",
+			max_preview_lines = 10,
+			finder_action_keys = {
+				open = "o",
+				vsplit = "s",
+				split = "i",
+				quit = "q",
+				scroll_down = "<C-f>",
+				scroll_up = "<C-b>",
+			},
+			code_action_keys = {
+				quit = "q",
+				exec = "<CR>",
+			},
+			rename_action_keys = {
+				quit = "<C-c>",
+				exec = "<CR>",
+			},
+			definition_preview_icon = "  ",
+			border_style = "single",
+			rename_prompt_prefix = "➤",
+			rename_output_qflist = {
+				enable = false,
+				auto_open_qflist = false,
+			},
+			server_filetype_map = {},
+			diagnostic_prefix_format = "%d. ",
+			diagnostic_message_format = "%m %c",
+			highlight_prefix = false,
+		}
+		end
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
@@ -233,7 +284,11 @@ require("lazy").setup({
 			vim.keymap.set('n','<leader>fg',builtin.live_grep,map_opts)
 			vim.keymap.set('n','<leader>fb',builtin.buffers,map_opts)
 			vim.keymap.set('n','<leader>fh',builtin.help_tags,map_opts)
-		end
+			require('telescope').load_extension('fzf')
+		end,
+		dependencies ={
+			{ 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
+		}
 	},
 	{
 		'nmac427/guess-indent.nvim',
