@@ -34,7 +34,7 @@ vim.g.mapleader=" "
 map('i','jj','<Esc>')
 map('i','<C-j><C-k>','<Esc>')
 map('n','<C-s>',':w<CR>')
-map('i','<C-s>','<Esc>:w<CR>')
+map('i','<C-s>','<C-o>:w<CR>')
 map('i','<M-s>','<C-o>:w<CR>')
 map('i','<C-z>','<C-o>u')
 map('n','<C-z>','u')
@@ -63,6 +63,13 @@ map('n','<C-k>',"<C-w><C-k>")
 map('n','<C-Left>',"<C-w><C-k>")
 map('n','<M-e>',":Neotree toggle<CR>")
 map('i','<M-e>',"<C-o>:Neotree toggle<CR>")
+
+-- tablineまわり
+vim.opt.showtabline = 0
+local function toggle_buffer_line()
+	vim.opt.showtabline = vim.opt.showtabline + 1 % 3
+end
+map('n','<leader>bl',toggle_buffer_line)
 
 -- Lazyのセットアップ（インストールできていなかったら取り寄せ）
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -101,7 +108,8 @@ require("lazy").setup({
 						},
 						hint = {enable = true},
 						workspace= {
-							library=vim.api.nvim_get_runtime_file("",true)
+							library=vim.api.nvim_get_runtime_file("",true),
+							checkThirdParty = false,
 						},
 						format = {
 							enable = true,
@@ -179,12 +187,12 @@ require("lazy").setup({
 			use_saga_diagnostic_sign = true,
 			-- diagnostic sign
 			error_sign = "󰅚",
-			warn_sign = "",
-			hint_sign = "",
+			warn_sign = "󰀪",
+			hint_sign = "󰌶",
 			infor_sign = "",
 			diagnostic_header_icon = "   ",
 			-- code action title icon
-			code_action_icon = " ",
+			code_action_icon = "󰌵",
 			code_action_prompt = {
 				enable = true,
 				sign = true,
@@ -210,7 +218,7 @@ require("lazy").setup({
 				quit = "<C-c>",
 				exec = "<CR>",
 			},
-			definition_preview_icon = "  ",
+			definition_preview_icon = "󰀹",
 			border_style = "single",
 			rename_prompt_prefix = "➤",
 			rename_output_qflist = {
@@ -275,7 +283,9 @@ require("lazy").setup({
 		--dependencies = { 'nvim-lua/plenary.nvim', },
 		event="VeryLazy",
 		cmd="Telescope",
-		opts={},
+		opts={
+			pickers = {colorscheme ={enable_preview=true}}
+		},
 		config = function(_,_opts)
 			require('telescope').setup(_opts)
 			local builtin = require('telescope.builtin')
@@ -285,6 +295,7 @@ require("lazy").setup({
 			vim.keymap.set('n','<leader>fb',builtin.buffers,map_opts)
 			vim.keymap.set('n','<leader>fh',builtin.help_tags,map_opts)
 			require('telescope').load_extension('fzf')
+			require('telescope').load_extension('session-lens')
 		end,
 		dependencies ={
 			{ 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
@@ -387,71 +398,113 @@ require("lazy").setup({
 		event="VeryLazy"
 	},
 	{
-		"Shatur/neovim-session-manager",
-		config = function()
-			local config = require('session_manager.config')
-			require('session_manager').setup({
-				autoload_mode = config.AutoloadMode.LastSession,
-				autosave_last_session = true,
-			})
+		"utilyre/barbecue.nvim",
+		name = "barbecue",
+		event="VeryLazy",
+		version = "*",
+		dependencies = {
+			"SmiteshP/nvim-navic",
+			"nvim-tree/nvim-web-devicons", -- optional dependency
+		},
+		opts = {
+			-- configurations go here
+		},
+	},
+	{
+		"folke/noice.nvim",
+		event = "VeryLazy",
+		opts = {
+			-- add any options here
+			popupmenu = {
+				-- cmp-cmdline has more sources and can be extended
+				backend = "cmp", -- backend to use to show regular cmdline completions
+			},
+			lsp = {
+				-- can not filter null-ls's data
+				-- j-hui/fidget.nvim
+				progress = {
+					enabled = false,
+				},
+			},
+			messages = {
+				-- Using kevinhwang91/nvim-hlslens because virtualtext is hard to read
+				view_search = false,
+			},
+		},
+		config= function(_,_opts)
+			require('noice').setup(_opts)
+			vim.keymap.set("c", "<S-Enter>", function()
+				require("noice").redirect(vim.fn.getcmdline())
+			end, { desc = "Redirect Cmdline" })
 		end,
-		event="VeryLazy"
+		dependencies = {
+			-- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+			"MunifTanjim/nui.nvim",
+			-- OPTIONAL:
+			--   `nvim-notify` is only needed, if you want to use the notification view.
+			--   If not available, we use `mini` as the fallback
+			--"rcarriga/nvim-notify",
+		}
 	},
 	{
 		'akinsho/bufferline.nvim',
 		version = "*",
-		event="VeryLazy",
 		opts = {},
 		config = function(_,_opts)
 			require("bufferline").setup(_opts)
 		end,
+		keys = "<leader>bl";
 		dependencies = {
 			{
 				'nvim-tree/nvim-web-devicons',
 			},
-			{
-				"nvim-neo-tree/neo-tree.nvim",
-				branch = "v3.x",
-				dependencies = {
-					"nvim-lua/plenary.nvim",
-					"nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
-					"MunifTanjim/nui.nvim",
-				},
-				cmd="Neotree",
-				opts = {
-					close_if_last_window=true,
-					source_selector = {
-						winbar = true,
-						status = true
+			--{
+			--	"nvim-neo-tree/neo-tree.nvim",
+			--}
+		}
+	},
+	{
+		"nvim-neo-tree/neo-tree.nvim",
+		branch = "v3.x",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+			"MunifTanjim/nui.nvim",
+		},
+		cmd="Neotree",
+		opts = {
+			close_if_last_window=true,
+			source_selector = {
+				winbar = true,
+				status = true
+			},
+			filesystem = {
+				window = {
+					width = 30,
+					mappings = {
+						["<F5>"] = "refresh",
+						["+"] = "open",
 					},
-					filesystem = {
-						window = {
-							width = 30,
-							mappings = {
-								["<F5>"] = "refresh",
-								["+"] = "open",
-							},
-						},
-						filtered_items = {
-							hide_dotfiles = false
-						},
-						hijack_netrw_behavior = "open_default",
-						follow_current_file = {enabled = true}
-					}
-				}
-			},
-			{
-				'echasnovski/mini.statusline',
-				version = false,
-				event="BufEnter",
-				config=function(_,_)
-					require('mini.statusline').setup()
-				end,
-				dependencies = {
-					{'nvim-tree/nvim-web-devicons'},
-					{'lewis6991/gitsigns.nvim',opts={}}
-				}
-			},
+				},
+				filtered_items = {
+					visible=true,
+					hide_dotfiles = false
+				},
+				hijack_netrw_behavior = "open_default",
+				follow_current_file = {enabled = true}
+			}
+		}
+	},
+	{
+		'echasnovski/mini.statusline',
+		version = false,
+		event="BufEnter",
+		config=function(_,_)
+			require('mini.statusline').setup()
+		end,
+		dependencies = {
+			{'nvim-tree/nvim-web-devicons'},
+			{'lewis6991/gitsigns.nvim',opts={}}
 		}
 	},
 	{
@@ -469,6 +522,13 @@ require("lazy").setup({
 		config = function()
 			require('modes').setup()
 		end
+	},
+	{
+		'rmagatti/auto-session',
+		event="VimEnter",
+		opts = {
+			log_level = "error",
+		}
 	}
 },{
 	defaults={lazy=true}
