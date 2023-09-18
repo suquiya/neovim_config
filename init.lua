@@ -19,11 +19,14 @@ g.loaded_2html_plugin = 1
 g.loaded_spellfile_plugin = 1
 g.loaded_rrhelper = 1
 
+-- windows用にchocolateyでインストールしたsqlite3へのpathを追加
+g.sqlite_clib_path = 'C:/ProgramData/chocolatey/lib/SQLite/tools/sqlite3.dll'
+
 vim.opt.tabstop=3
 vim.opt.shiftwidth=3
 
 local map = function(mode,keys,to,_opts)
-	local opts = {noremap = true,silent=false}
+	local opts = {noremap = true,silent=true}
 	if _opts then
 		opts = vim.tbl_extend('force',opts,_opts)
 	end
@@ -63,6 +66,14 @@ map('n','<C-k>',"<C-w><C-k>")
 map('n','<C-Left>',"<C-w><C-k>")
 map('n','<M-e>',":Neotree toggle<CR>")
 map('i','<M-e>',"<C-o>:Neotree toggle<CR>")
+map('n','<leader>ff',":Telescope find_files<CR>")
+map('n','<leader>bb',":Telescope buffers<CR>")
+map('n','<leader>fb',":Telescope buffers<CR>")
+--map('n','<leader>tf',":Telescope find_files<CR>")
+--map('n','<leader>tb',":Telescope buffers<CR>")
+map('n','<leader>t',":Telescope<CR>")
+map('n',"<M-w>", ':Telescope buffers<CR>')
+map('i','<M-w>','<C-o>:Telescope buffers<CR>')
 
 -- tablineまわり
 vim.opt.showtabline = 0
@@ -296,9 +307,16 @@ require("lazy").setup({
 			vim.keymap.set('n','<leader>fh',builtin.help_tags,map_opts)
 			require('telescope').load_extension('fzf')
 			require('telescope').load_extension('session-lens')
+			require("telescope").load_extension("frecency")
 		end,
 		dependencies ={
-			{ 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
+			{ 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build'},
+			{
+				"nvim-telescope/telescope-frecency.nvim",
+				dependencies = {
+				"kkharji/sqlite.lua",
+				}
+			}
 		}
 	},
 	{
@@ -529,7 +547,9 @@ require("lazy").setup({
 		opts = {
 			log_level = "error",
 		}
-	}
+	},
+	-- カラースキームたち
+	
 },{
 	defaults={lazy=true}
 })
