@@ -87,7 +87,7 @@ local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
 	vim.fn.system({
 	"git",
-	 "clone",
+	"clone",
 	"--filter=blob:none",
 	"https://github.com/folke/lazy.nvim.git",
 	"--branch=stable", -- latest stable release
@@ -131,6 +131,25 @@ require("lazy").setup({
 						}
 					}
 				}
+			})
+			map('n','<space>e',vim.diagnostic.open_float)
+			map('n','[d',vim.diagnostic.goto_prev)
+			map('n',']d',vim.diagnostic.goto_next)
+			map('n','<space>q',vim.diagnostic.setloclist)
+
+			-- LspAttachにキーマッピング設定を入れ込む
+			vim.api.nvim_create_autocmd('LspAttach',{
+				group = vim.api.nvim_create_augroup('UserLspConfig',{}),
+				callback = function(ev)
+					-- <c-x><c-o>で補完が可能になる？
+					vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+					-- マッピング
+					local opts = {buffer = ev.buf}
+					map('n','K',vim.lsp.buf.hover,opts)
+					map('n','gD',vim.lsp.buf.declaration,opts)
+					map('n','gd',vim.lsp.buf.definition,opts)
+				end
 			})
 		end,
 		dependencies= {
@@ -264,19 +283,21 @@ require("lazy").setup({
 	},
 	{
 		'windwp/nvim-autopairs',
-   	event = "InsertEnter",
+		event = "InsertEnter",
 		opts = {} -- this is equalent to setup({}) function
 	},
 	{
 		"lukas-reineke/indent-blankline.nvim",
-		event="VeryLazy",
-		config = function()
-			require("indent_blankline").setup {
-				-- for example, context is off by default, use this to turn it on
-				show_current_context = true,
-				show_current_context_start = true,
+		event={"BufReadPre","BufNewFile"},
+		config=function()
+			require('ibl').setup{
+				 indent = {
+					 char = {"│"},
+					 tab_char = {"│"}
+				 },
 			}
-		end
+		end,
+		dependencies = { 'nvim-treesitter/nvim-treesitter' },
 	},
 	{
 		'numToStr/Comment.nvim',
@@ -301,10 +322,23 @@ require("lazy").setup({
 			require('telescope').setup(_opts)
 			local builtin = require('telescope.builtin')
 			local map_opts = {noremap = true,silent=false}
-			vim.keymap.set('n','<leader>ff',builtin.find_files, map_opts)
-			vim.keymap.set('n','<leader>fg',builtin.live_grep,map_opts)
-			vim.keymap.set('n','<leader>fb',builtin.buffers,map_opts)
-			vim.keymap.set('n','<leader>fh',builtin.help_tags,map_opts)
+			map('n','<leader>bb',":Telescope buffers<CR>")
+			--map('n','<leader>tb',":Telescope buffers<CR>")
+
+			-- telescopeを呼び出すだけ
+			map('n','<leader>t',":Telescope<CR>")
+
+			map('n',"<M-w>", ':Telescope buffers<CR>')
+			map('i','<M-w>','<C-o>:Telescope buffers<CR>')
+
+			local ff = builtin.find_files
+			map('n','<leader>ff',ff, map_opts)
+			map('n','<leader>tf',ff,map_opts)
+			map('n','<leader>fg',builtin.live_grep,map_opts)
+			local fb = builtin.buffers
+			map('n','<leader>fb',fb,map_opts)
+			map('n','<leander>bb',fb,map_opts)
+			map('n','<leader>fh',builtin.help_tags,map_opts)
 			require('telescope').load_extension('fzf')
 			require('telescope').load_extension('session-lens')
 			require("telescope").load_extension("frecency")
@@ -549,7 +583,6 @@ require("lazy").setup({
 		}
 	},
 	-- カラースキームたち
-	
 },{
 	defaults={lazy=true}
 })
