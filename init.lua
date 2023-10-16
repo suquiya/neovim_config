@@ -19,9 +19,6 @@ g.loaded_2html_plugin = 1
 g.loaded_spellfile_plugin = 1
 g.loaded_rrhelper = 1
 
--- windows用にchocolateyでインストールしたsqlite3へのpathを追加
-g.sqlite_clib_path = 'C:/ProgramData/chocolatey/lib/SQLite/tools/sqlite3.dll'
-
 vim.opt.tabstop=3
 vim.opt.shiftwidth=3
 
@@ -45,6 +42,8 @@ map('i','<C-y>','<C-o><C-R>')
 map('n','<C-y>','<C-R>')
 map('i','<C-g>','<C-o>yy')
 map('i','<C-p>p','<C-o>p')
+map('i','<C-f>','<Esc>/')
+map('n','<C-f>','/')
 map('n','<F3>',':noh<CR>')
 map('i','<F3>','<C-o>:noh<CR>')
 map('n','<leader>mo',':Mason<CR>')
@@ -69,11 +68,13 @@ map('i','<M-e>',"<C-o>:Neotree toggle<CR>")
 map('n','<leader>ff',":Telescope find_files<CR>")
 map('n','<leader>bb',":Telescope buffers<CR>")
 map('n','<leader>fb',":Telescope buffers<CR>")
---map('n','<leader>tf',":Telescope find_files<CR>")
---map('n','<leader>tb',":Telescope buffers<CR>")
+map('n','<leader>fr',":Telescope frecency<CR>")
+map('n','<leader>cc',":Telescope frecency<CR>")
+map('n','<leader><leader>f',":Telescope frecency<CR>")
 map('n','<leader>t',":Telescope<CR>")
 map('n',"<M-w>", ':Telescope buffers<CR>')
 map('i','<M-w>','<C-o>:Telescope buffers<CR>')
+map('i','<C-P>','<Esc>:')
 
 -- tablineまわり
 vim.opt.showtabline = 0
@@ -288,7 +289,7 @@ require("lazy").setup({
 	},
 	{
 		"lukas-reineke/indent-blankline.nvim",
-		event={"BufReadPre","BufNewFile"},
+		event={"VeryLazy"},
 		config=function()
 			require('ibl').setup{
 				 indent = {
@@ -311,7 +312,7 @@ require("lazy").setup({
 	},
 	{
 		'nvim-telescope/telescope.nvim',
-		tag = '0.1.2',
+		branch = '0.1.x',
 		--dependencies = { 'nvim-lua/plenary.nvim', },
 		event="VeryLazy",
 		cmd="Telescope",
@@ -342,16 +343,53 @@ require("lazy").setup({
 			require('telescope').load_extension('fzf')
 			require('telescope').load_extension('session-lens')
 			require("telescope").load_extension("frecency")
+			require("telescope").load_extension("file_browser")
+			require("telescope").load_extension("lazy")
+			require('telescope').load_extension('project')
+			require('telescope').load_extension("undo")
 		end,
 		dependencies ={
-			{ 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build'},
+			{
+				'nvim-telescope/telescope-fzf-native.nvim',
+				build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build'
+			},
 			{
 				"nvim-telescope/telescope-frecency.nvim",
-				dependencies = {
-				"kkharji/sqlite.lua",
-				}
+			},
+			{
+				"nvim-telescope/telescope-file-browser.nvim",
+			},
+			{
+				"tsakirist/telescope-lazy.nvim"
+			},
+			{
+				"nvim-telescope/telescope-project.nvim"
+			},
+			{
+				"debugloop/telescope-undo.nvim",
 			}
 		}
+	},
+	{
+		"cshuaimin/ssr.nvim",
+		keys="<leader>sr",
+		config=function ()
+			local ssr = require("ssr")
+			ssr.setup({
+				border="rounded",
+				min_width=50,
+				max_width=120,
+				max_height=25,
+				keymaps={
+					close="q",
+					next_match="n",
+					prev_match="N",
+					replace_confirm="<cr>",
+					replace_all="<leader><cr>"
+				}
+			})
+			map('n','<leader>sr',ssr.open)
+		end
 	},
 	{
 		'nmac427/guess-indent.nvim',
@@ -553,11 +591,30 @@ require("lazy").setup({
 		event="BufEnter",
 		config=function(_,_)
 			require('mini.statusline').setup()
+			--require("mini.map").setup()
 		end,
 		dependencies = {
 			{'nvim-tree/nvim-web-devicons'},
 			{'lewis6991/gitsigns.nvim',opts={}}
 		}
+	},
+	--{ 'echasnovski/mini.map', version = false },
+	--[[{
+		'gorbit99/codewindow.nvim',
+		event="BufEnter",
+		config=function ()
+			local codewindow = require('codewindow')
+			codewindow.setup()
+		end
+	},]]--
+	{
+		'dstein64/nvim-scrollview',
+		event='BufEnter',
+		config=function ()
+			require('scrollview').setup({
+				scrollview_signs_on_startup={'all'}
+			})
+		end
 	},
 	{
 		"folke/which-key.nvim",
@@ -582,6 +639,16 @@ require("lazy").setup({
 			log_level = "error",
 		}
 	},
+	{
+		'akinsho/toggleterm.nvim',
+		version = "*",
+		event="VimEnter",
+		config=function ()
+			require("toggleterm").setup({
+				open_mapping = [[<M-t>]],
+			})
+		end
+	}
 	-- カラースキームたち
 },{
 	defaults={lazy=true}
@@ -596,4 +663,9 @@ vim.opt.listchars:append "tab:--"
 vim.opt.listchars:append "trail:*"
 
 
-
+if vim.g.neovide then
+	vim.o.guifont="PlemolJP_Console_NF:h14"
+	--'Cascadia Code','Cascadia Code','Martian Mono Std Lt','PlemolJP Console NF','FantasqueSansMono NF','Lekton NF','JetBrainsMono NF','ShureTechMono NF','Hasklug NF','Inconsolata NF','Liga Hack','UbuntuMono NF','LiterationMono NF','Hack NF',HackGen,Cica,'Myrica M', Consolas, monospace
+	vim.opt.linespace=1
+	vim.g.neovide_cursor_animation_length = 0
+end
