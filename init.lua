@@ -347,6 +347,7 @@ require("lazy").setup({
 			require("telescope").load_extension("lazy")
 			require('telescope').load_extension('project')
 			require('telescope').load_extension("undo")
+			require'telescope'.load_extension('repo')
 		end,
 		dependencies ={
 			{
@@ -367,6 +368,9 @@ require("lazy").setup({
 			},
 			{
 				"debugloop/telescope-undo.nvim",
+			},
+			{
+				'cljoly/telescope-repo.nvim'
 			}
 		}
 	},
