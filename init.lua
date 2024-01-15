@@ -1,6 +1,8 @@
 vim.loader.enable()
 
 local g = vim.g
+
+-- 各種不要なビルトインプラグインを無効に
 g.loaded_gzip = 1
 g.loaded_tar = 1
 g.loaded_tarPlugin = 1
@@ -18,6 +20,7 @@ g.loaded_netrwFileHandlers = 1
 g.loaded_2html_plugin = 1
 g.loaded_spellfile_plugin = 1
 g.loaded_rrhelper = 1
+g.loaded_tutor_mode_plugin = 1
 
 vim.opt.tabstop=3
 vim.opt.shiftwidth=3
@@ -31,6 +34,7 @@ local map = function(mode,keys,to,_opts)
 end
 vim.g.mapleader=" "
 
+local nsopt = {silent=false}
 map('i','jj','<Esc>')
 map('i','<C-j><C-k>','<Esc>')
 map('n','<C-s>',':w<CR>')
@@ -42,8 +46,8 @@ map('i','<C-y>','<C-o><C-R>')
 map('n','<C-y>','<C-R>')
 map('i','<C-g>','<C-o>yy')
 map('i','<C-p>p','<C-o>p')
-map('i','<C-f>','<Esc>/')
-map('n','<C-f>','/')
+map('i','<C-f>','<Esc>/',nsopt)
+map('n','<C-f>','/',nsopt)
 map('n','<F3>',':noh<CR>')
 map('i','<F3>','<C-o>:noh<CR>')
 map('n','<leader>mo',':Mason<CR>')
@@ -71,10 +75,12 @@ map('n','<leader>fb',":Telescope buffers<CR>")
 map('n','<leader>fr',":Telescope frecency<CR>")
 map('n','<leader>cc',":Telescope frecency<CR>")
 map('n','<leader><leader>f',":Telescope frecency<CR>")
-map('n','<leader>t',":Telescope<CR>")
+map('n','<leader>t',":Telescope",nsopt)
+map('n','<M-t>',":Telescope",nsopto)
+map('i','<M-t>',"<Esc>:Telescope",nsopt)
 map('n',"<M-w>", ':Telescope buffers<CR>')
 map('i','<M-w>','<C-o>:Telescope buffers<CR>')
-map('i','<C-P>','<Esc>:')
+map('i','<C-P>','<Esc>:',nsopt)
 
 -- tablineまわり
 vim.opt.showtabline = 0
@@ -96,6 +102,7 @@ if not vim.loop.fs_stat(lazypath) then
 })
 end
 vim.opt.rtp:prepend(lazypath)
+vim.opt.whichwrap = 'h,l,<,>,[,],~'
 
 require("lazy").setup({
 	{
@@ -173,40 +180,36 @@ require("lazy").setup({
 		},
 	},
 	{
-		"simrat39/rust-tools.nvim",
-		event="BufReadPre *.rs",
-		config = function()
-			local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
-			local rt = require("rust-tools")
-			rt.setup({
-				tools = {
-					inlay_hints = {
+		'mrcjkb/rustaceanvim',
+		version = '^3', -- Recommended,
+		config=function()
+			vim.g.rustaceanvim = {
+				tools ={
+					inlay_hints ={
 						parameter_hints_prefix = "←",
 						other_hints_prefix = "⇒",
 					}
 				},
 				server = {
-					on_attach = function(_, bufnr)
+					on_attach = function(_,bufnr)
 						-- Hover actions
-						vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, { buffer = bufnr })
+						vim.keymap.set("n","<C-space>", rt.hover_actions.hover_actions, {buffer = bufnr})
 						-- Code action groups
-						vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, { buffer = bufnr })
+						vim.keymap.set("n","<Leader>a",rt.code_action_group.code_action_group,{buffer=bufnr})
 					end,
-					server = {
-						settings = {
-							["rust-analyzer"] = {
-								checkOnSave = true,
-								check = {
-									command = "clippy",
-									features = "all"
-								}
+					settings = {
+						["rust-analyzer"] = {
+							checkOnSave = true,
+							check = {
+								command="clippy",
+								features = "all"
 							}
-						},
-						capabilities = capabilities,
+						}
 					}
-				},
-			})
+				}
+			}
 		end,
+		ft = { 'rust' },
 	},
 	{
 		'kkharji/lspsaga.nvim',
@@ -267,7 +270,7 @@ require("lazy").setup({
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
 		cmd = {"TSInstall","TSUpdate"},
-		event="VeryLazy",
+		event="BufReadPost",
 		config = function()
 			require('nvim-treesitter.configs').setup{
 				ensure_installed = {"lua","rust"},
@@ -279,8 +282,59 @@ require("lazy").setup({
 					enable=true,
 				},
 			}
-			-- require 'nvim-treesitter.install'.prefer_git = false
+			require 'nvim-treesitter.install'.prefer_git = false
+
+			-- require('ufo').setup({
+			-- 	provider_selector=function(bufnr,filetype,buftype)
+			-- 		return {'treesitter','indent'}
+			-- 	end,
+			-- 	fold_virt_text_handler = function(virtText, lnum, endLnum, width, truncate)
+			-- 		local newVirtText = {}
+			-- 		local suffix = (' 󰁂 %d '):format(endLnum - lnum)
+			-- 		local sufWidth = vim.fn.strdisplaywidth(suffix)
+			-- 		local targetWidth = width - sufWidth
+			-- 		local curWidth = 0
+			-- 		for _, chunk in ipairs(virtText) do
+			-- 			local chunkText = chunk[1]
+			-- 			local chunkWidth = vim.fn.strdisplaywidth(chunkText)
+			-- 			if targetWidth > curWidth + chunkWidth then
+			-- 				table.insert(newVirtText,chunk)
+			-- 			else
+			-- 				chunkText = truncate(chunkText,targetWidth - curWidth)
+			-- 				local hlGroup = chunk[2]
+			-- 				table.insert(newVirtText, {chunkText,hlGroup})
+			-- 				chunkWidth = vim.fn.strdisplaywidth(chunkText)
+			-- 				if curWidth + chunkWidth < targetWidth then
+			-- 					suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
+			-- 				end
+			-- 				break
+			-- 			end
+			-- 			curWidth = curWidth + chunkWidth
+			-- 		end
+			-- 		table.insert(newVirtText, {suffix, 'ModeMsg'})
+			-- 		return newVirtText
+			-- 	end
+			-- });
+			-- vim.keymap.set('n', 'P', function()
+			-- 	local winid = require('ufo').peekFoldedLinesUnderCursor()
+			-- end)
 		end,
+		-- dependencies = {
+		-- 	{
+		-- 		'kevinhwang91/nvim-ufo',
+		-- 		event="BufReadPost",
+		-- 		config=function()
+		-- 			vim.o.foldcolumn = '0' -- '0' is not bad
+		-- 			vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+		-- 			vim.o.foldlevelstart = 99
+		-- 			vim.o.foldenable = true
+		-- 			--vim.o.fillchars = [[eob: ,fold: ,foldopen:,foldsep: ,foldclose:]]
+		-- 		end,
+		-- 		dependencies = {
+		-- 			'kevinhwang91/promise-async'
+		-- 		}
+		-- 	},
+		-- }
 	},
 	{
 		'windwp/nvim-autopairs',
@@ -302,6 +356,7 @@ require("lazy").setup({
 	},
 	{
 		'numToStr/Comment.nvim',
+		keys={"gc","gcc","gb"},
 		opts = {
 			-- add any options here
 		},
@@ -316,38 +371,62 @@ require("lazy").setup({
 		--dependencies = { 'nvim-lua/plenary.nvim', },
 		event="VeryLazy",
 		cmd="Telescope",
-		opts={
-			pickers = {colorscheme ={enable_preview=true}}
-		},
-		config = function(_,_opts)
-			require('telescope').setup(_opts)
+		config = function(_,_)
+			local actions = require("telescope.actions")
+			local action_layout = require('telescope.actions.layout')
+			local opts = {
+				defaults = {
+					mappings = {
+						n = {
+							["<M-p>"] = action_layout.toggle_preview
+						},
+						i = {
+							["<M-p>"] = action_layout.toggle_preview
+						}
+					}
+				},
+				pickers = {
+					colorscheme = {
+						enable_preview = true
+					},
+					buffers = {
+						mappings = {
+							i = {
+								["<C-d>"] = actions.delete_buffer
+							},
+							n = {
+								["<C-d>"] = actions.delete_buffer
+							}
+						}
+					}
+				}
+			}
+			require('telescope').setup(opts)
 			local builtin = require('telescope.builtin')
 			local map_opts = {noremap = true,silent=false}
 			map('n','<leader>bb',":Telescope buffers<CR>")
-			--map('n','<leader>tb',":Telescope buffers<CR>")
-
-			-- telescopeを呼び出すだけ
-			map('n','<leader>t',":Telescope<CR>")
 
 			map('n',"<M-w>", ':Telescope buffers<CR>')
 			map('i','<M-w>','<C-o>:Telescope buffers<CR>')
 
 			local ff = builtin.find_files
 			map('n','<leader>ff',ff, map_opts)
-			map('n','<leader>tf',ff,map_opts)
 			map('n','<leader>fg',builtin.live_grep,map_opts)
 			local fb = builtin.buffers
 			map('n','<leader>fb',fb,map_opts)
 			map('n','<leander>bb',fb,map_opts)
 			map('n','<leader>fh',builtin.help_tags,map_opts)
 			require('telescope').load_extension('fzf')
-			require('telescope').load_extension('session-lens')
+			--require('telescope').load_extension('session-lens')
 			require("telescope").load_extension("frecency")
 			require("telescope").load_extension("file_browser")
 			require("telescope").load_extension("lazy")
 			require('telescope').load_extension('project')
 			require('telescope').load_extension("undo")
 			require'telescope'.load_extension('repo')
+			require('telescope').load_extension('possession')
+
+			map('n','<leader>ft',':Telescope telescope-tabs list_tabs<CR>');
 		end,
 		dependencies ={
 			{
@@ -371,6 +450,9 @@ require("lazy").setup({
 			},
 			{
 				'cljoly/telescope-repo.nvim'
+			},
+			{
+				'LukasPietzschmann/telescope-tabs',
 			}
 		}
 	},
@@ -540,7 +622,7 @@ require("lazy").setup({
 			--"rcarriga/nvim-notify",
 		}
 	},
-	{
+	--[[{
 		'akinsho/bufferline.nvim',
 		version = "*",
 		opts = {},
@@ -555,6 +637,21 @@ require("lazy").setup({
 			--{
 			--	"nvim-neo-tree/neo-tree.nvim",
 			--}
+		}
+	},]]--
+	{
+		'jedrzejboczar/possession.nvim',
+		event="VimEnter",
+		opts={
+			commands = {
+				save="SSave",
+				load="Sload",
+				delete="Sdelete",
+				list="Slist"
+			}
+		},
+		dependencies = {
+			'nvim-lua/plenary.nvim'
 		}
 	},
 	{
@@ -636,13 +733,13 @@ require("lazy").setup({
 			require('modes').setup()
 		end
 	},
-	{
+	--[[{
 		'rmagatti/auto-session',
 		event="VimEnter",
 		opts = {
 			log_level = "error",
 		}
-	},
+	},]]--
 	{
 		'akinsho/toggleterm.nvim',
 		version = "*",
