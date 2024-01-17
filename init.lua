@@ -283,58 +283,7 @@ require("lazy").setup({
 				},
 			}
 			require 'nvim-treesitter.install'.prefer_git = false
-
-			-- require('ufo').setup({
-			-- 	provider_selector=function(bufnr,filetype,buftype)
-			-- 		return {'treesitter','indent'}
-			-- 	end,
-			-- 	fold_virt_text_handler = function(virtText, lnum, endLnum, width, truncate)
-			-- 		local newVirtText = {}
-			-- 		local suffix = (' 󰁂 %d '):format(endLnum - lnum)
-			-- 		local sufWidth = vim.fn.strdisplaywidth(suffix)
-			-- 		local targetWidth = width - sufWidth
-			-- 		local curWidth = 0
-			-- 		for _, chunk in ipairs(virtText) do
-			-- 			local chunkText = chunk[1]
-			-- 			local chunkWidth = vim.fn.strdisplaywidth(chunkText)
-			-- 			if targetWidth > curWidth + chunkWidth then
-			-- 				table.insert(newVirtText,chunk)
-			-- 			else
-			-- 				chunkText = truncate(chunkText,targetWidth - curWidth)
-			-- 				local hlGroup = chunk[2]
-			-- 				table.insert(newVirtText, {chunkText,hlGroup})
-			-- 				chunkWidth = vim.fn.strdisplaywidth(chunkText)
-			-- 				if curWidth + chunkWidth < targetWidth then
-			-- 					suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
-			-- 				end
-			-- 				break
-			-- 			end
-			-- 			curWidth = curWidth + chunkWidth
-			-- 		end
-			-- 		table.insert(newVirtText, {suffix, 'ModeMsg'})
-			-- 		return newVirtText
-			-- 	end
-			-- });
-			-- vim.keymap.set('n', 'P', function()
-			-- 	local winid = require('ufo').peekFoldedLinesUnderCursor()
-			-- end)
 		end,
-		-- dependencies = {
-		-- 	{
-		-- 		'kevinhwang91/nvim-ufo',
-		-- 		event="BufReadPost",
-		-- 		config=function()
-		-- 			vim.o.foldcolumn = '0' -- '0' is not bad
-		-- 			vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
-		-- 			vim.o.foldlevelstart = 99
-		-- 			vim.o.foldenable = true
-		-- 			--vim.o.fillchars = [[eob: ,fold: ,foldopen:,foldsep: ,foldclose:]]
-		-- 		end,
-		-- 		dependencies = {
-		-- 			'kevinhwang91/promise-async'
-		-- 		}
-		-- 	},
-		-- }
 	},
 	{
 		'windwp/nvim-autopairs',
@@ -568,7 +517,6 @@ require("lazy").setup({
 	{'hrsh7th/cmp-cmdline',event="CmdlineEnter"},
 	{ "L3MON4D3/LuaSnip",event="InsertEnter"},
 	{ "saadparwaiz1/cmp_luasnip",event="InsertEnter"},
-	{ 'echasnovski/mini.bufremove', version = false, event="VeryLazy"},
 	{
 		"kwkarlwang/bufresize.nvim",
 		event="VeryLazy"
@@ -588,7 +536,7 @@ require("lazy").setup({
 	},
 	{
 		"folke/noice.nvim",
-		event = "VeryLazy",
+		event = "VimEnter",
 		opts = {
 			-- add any options here
 			popupmenu = {
@@ -687,27 +635,18 @@ require("lazy").setup({
 		}
 	},
 	{
-		'echasnovski/mini.statusline',
+		'echasnovski/mini.nvim',
 		version = false,
-		event="BufEnter",
+		event={"BufEnter","VeryLazy"},
 		config=function(_,_)
 			require('mini.statusline').setup()
-			--require("mini.map").setup()
+			require('mini.bufremove').setup()
 		end,
 		dependencies = {
 			{'nvim-tree/nvim-web-devicons'},
 			{'lewis6991/gitsigns.nvim',opts={}}
 		}
 	},
-	--{ 'echasnovski/mini.map', version = false },
-	--[[{
-		'gorbit99/codewindow.nvim',
-		event="BufEnter",
-		config=function ()
-			local codewindow = require('codewindow')
-			codewindow.setup()
-		end
-	},]]--
 	{
 		'dstein64/nvim-scrollview',
 		event='BufEnter',
