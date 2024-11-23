@@ -82,6 +82,24 @@ map('n','<C-Left>',"<C-w><C-k>")
 -- map('i','<M-w>','<C-o>:Telescope buffers<CR>')
 map('i','<C-P>','<Esc>:',nsopt)
 
+-- Clone 'mini.nvim' manually in a way that it gets managed by 'mini.deps'
+local path_package = vim.fn.stdpath('data') .. '/site/'
+local mini_path = path_package .. 'pack/deps/start/mini.nvim'
+if not vim.loop.fs_stat(mini_path) then
+  vim.cmd('echo "Installing `mini.nvim`" | redraw')
+  local clone_cmd = {
+    'git', 'clone', '--filter=blob:none',
+    'https://github.com/echasnovski/mini.nvim', mini_path
+  }
+  vim.fn.system(clone_cmd)
+  vim.cmd('packadd mini.nvim | helptags ALL')
+  vim.cmd('echo "Installed `mini.nvim`" | redraw')
+end
+
+-- Set up 'mini.deps' (customize to your liking)
+require('mini.deps').setup({ path = { package = path_package } })
+
+
 -- tablineまわり
 vim.opt.showtabline = 0
 local function toggle_buffer_line()
@@ -89,131 +107,116 @@ local function toggle_buffer_line()
 end
 map('n','<leader>bl',toggle_buffer_line)
 
--- Lazyのセットアップ（インストールできていなかったら取り寄せ）
--- local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
--- if not vim.loop.fs_stat(lazypath) then
--- 	vim.fn.system({
--- 	"git",
--- 	"clone",
--- 	"--filter=blob:none",
--- 	"https://github.com/folke/lazy.nvim.git",
--- 	"--branch=stable", -- latest stable release
--- 	lazypath,
--- })
--- end
--- vim.opt.rtp:prepend(lazypath)
+
 vim.opt.whichwrap = 'h,l,<,>,[,],~'
 
+local add, now, later = MiniDeps.add, MiniDeps.now, MiniDeps.later
+
+now(function()
+	require("mini.basics").setup()
+	require("mini.move").setup()
+end)
+
+-- lspとmasonまわりのあれこれ
+later(function()
+	add("williamboman/mason.nvim")
+	require("mason").setup()
+	add("neovim/nvim-lspconfig")
+	local signs = { Error = "󰅚", Warn = "󰀪", Hint = "󰌶", Info = "" }
+	for type, icon in pairs(signs) do
+		local hl = "DiagnosticSign" .. type
+		vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+	end
+	
+	add("williamboman/mason-lspconfig.nvim")
+	require("mason-lspconfig").setup({
+		ensure_installed = {
+			"rust_analyzer",
+			"lua_ls"
+		}
+	})
+	local lspconf = require("lspconfig")
+	local gcap = require("cmp_nvim_lsp").default_capabilities()
+	lspconf.lua_ls.setup({
+		capabilities = gcap,
+		settings = {
+			Lua = {
+				diagnostics={
+					globals={"vim"}
+				},
+				hint = {enable = true},
+				workspace= {
+					library=vim.api.nvim_get_runtime_file("",true),
+					checkThirdParty = false,
+				},
+				format = {
+					enable = true,
+					defaultconfig = {
+						indent_style = "tab",
+						indent_size = "2"
+					}
+				}
+			}
+		}
+	})
+	map('n','<space>e',vim.diagnostic.open_float)
+	map('n','[d',vim.diagnostic.goto_prev)
+	map('n',']d',vim.diagnostic.goto_next)
+	map('n','<space>q',vim.diagnostic.setloclist)
+	-- LspAttachにキーマッピング設定を入れ込む
+	vim.api.nvim_create_autocmd('LspAttach',{
+		group = vim.api.nvim_create_augroup('UserLspConfig',{}),
+		callback = function(ev)
+			-- <c-x><c-o>で補完が可能になる？
+			vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+			-- マッピング
+			local opts = {buffer = ev.buf}
+			map('n','K',vim.lsp.buf.hover,opts)
+			map('n','gD',vim.lsp.buf.declaration,opts)
+			map('n','gd',vim.lsp.buf.definition,opts)
+		end
+	})
+end)
+
+-- rustまわりのセットアップ
+later(function()
+		add({
+			source='mrcjkb/rustaceanvim',
+			checkout='v5.15.0'
+		})
+
+		vim.g.rustaceanvim = {
+			tools ={
+				inlay_hints ={
+					parameter_hints_prefix = "←",
+					other_hints_prefix = "⇒",
+				}
+			},
+			server = {
+				on_attach = function(_,bufnr)
+					-- Hover actions
+					vim.keymap.set("n","<C-space>", vim.lsp.buf.hover(), {buffer = bufnr})
+					-- Code action groups
+					local codeAction = function ()
+						vim.cmd.RustLsp('codeAction')
+					end
+					vim.keymap.set("n","<Leader>a",codeAction,{buffer=bufnr})
+				end,
+				settings = {
+					["rust-analyzer"] = {
+						checkOnSave = true,
+						check = {
+							command="clippy",
+							features = "all"
+						}
+					}
+				}
+			}
+		}
+end)
+
 -- require("lazy").setup({
--- 	{
--- 		"williamboman/mason-lspconfig.nvim",
--- 		event={"VimEnter","BufReadPre"},
--- 		opts={
--- 			ensure_installed = {
--- 				"rust_analyzer",
--- 				"lua_ls"
--- 			}
--- 		},
--- 		config=function(_,_opts)
--- 			require("mason-lspconfig").setup(_opts)
--- 			local lspconf = require("lspconfig")
--- 			local gcap = require("cmp_nvim_lsp").default_capabilities()
--- 			lspconf.lua_ls.setup({
--- 				capabilities = gcap,
--- 				settings = {
--- 					Lua = {
--- 						diagnostics={
--- 							globals={"vim"}
--- 						},
--- 						hint = {enable = true},
--- 						workspace= {
--- 							library=vim.api.nvim_get_runtime_file("",true),
--- 							checkThirdParty = false,
--- 						},
--- 						format = {
--- 							enable = true,
--- 							defaultconfig = {
--- 								indent_style = "tab",
--- 								indent_size = "2"
--- 							}
--- 						}
--- 					}
--- 				}
--- 			})
--- 			map('n','<space>e',vim.diagnostic.open_float)
--- 			map('n','[d',vim.diagnostic.goto_prev)
--- 			map('n',']d',vim.diagnostic.goto_next)
--- 			map('n','<space>q',vim.diagnostic.setloclist)
---
--- 			-- LspAttachにキーマッピング設定を入れ込む
--- 			vim.api.nvim_create_autocmd('LspAttach',{
--- 				group = vim.api.nvim_create_augroup('UserLspConfig',{}),
--- 				callback = function(ev)
--- 					-- <c-x><c-o>で補完が可能になる？
--- 					vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
---
--- 					-- マッピング
--- 					local opts = {buffer = ev.buf}
--- 					map('n','K',vim.lsp.buf.hover,opts)
--- 					map('n','gD',vim.lsp.buf.declaration,opts)
--- 					map('n','gd',vim.lsp.buf.definition,opts)
--- 				end
--- 			})
--- 		end,
--- 		dependencies= {
--- 			{
--- 				"williamboman/mason.nvim",
--- 				event={"VimEnter"},
--- 				opts={},
--- 			},
--- 			{
--- 				"neovim/nvim-lspconfig",
--- 				config=function()
--- 					local signs = { Error = "󰅚", Warn = "󰀪", Hint = "󰌶", Info = "" }
--- 					for type, icon in pairs(signs) do
--- 						local hl = "DiagnosticSign" .. type
--- 						vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
--- 					end
--- 				end,
--- 				event="VimEnter"
--- 			}
--- 		},
--- 	},
--- 	{
--- 		'mrcjkb/rustaceanvim',
--- 		version = '^3', -- Recommended,
--- 		config=function()
--- 			vim.g.rustaceanvim = {
--- 				tools ={
--- 					inlay_hints ={
--- 						parameter_hints_prefix = "←",
--- 						other_hints_prefix = "⇒",
--- 					}
--- 				},
--- 				server = {
--- 					on_attach = function(_,bufnr)
--- 						-- Hover actions
--- 						vim.keymap.set("n","<C-space>", vim.lsp.buf.hover(), {buffer = bufnr})
--- 						-- Code action groups
--- 						local codeAction = function ()
--- 							vim.cmd.RustLsp('codeAction')
--- 						end
--- 						vim.keymap.set("n","<Leader>a",codeAction,{buffer=bufnr})
--- 					end,
--- 					settings = {
--- 						["rust-analyzer"] = {
--- 							checkOnSave = true,
--- 							check = {
--- 								command="clippy",
--- 								features = "all"
--- 							}
--- 						}
--- 					}
--- 				}
--- 			}
--- 		end,
--- 		ft = { 'rust' },
--- 	},
 -- 	{
 -- 		'kkharji/lspsaga.nvim',
 -- 		event="VimEnter",
@@ -308,14 +311,6 @@ vim.opt.whichwrap = 'h,l,<,>,[,],~'
 -- 		end,
 -- 		dependencies = { 'nvim-treesitter/nvim-treesitter' },
 -- 	},
--- 	-- {
--- 	-- 	'numToStr/Comment.nvim',
--- 	-- 	keys={"gc","gcc","gb"},
--- 	-- 	opts = {
--- 	-- 		-- add any options here
--- 	-- 	},
--- 	-- 	event="InsertEnter"
--- 	-- },
 -- 	{
 -- 		'nvim-lua/plenary.nvim',
 -- 	},
