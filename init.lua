@@ -50,9 +50,8 @@ map('i','<C-f>','<Esc>/',nsopt)
 map('n','<C-f>','/',nsopt)
 map('n','<F3>',':noh<CR>')
 map('i','<F3>','<C-o>:noh<CR>')
--- map('n','<leader>mo',':Mason<CR>')
--- map('n','<leader>lo',":Lazy<CR>")
--- map('n','<leader>lu',":Lazy update<CR>")
+map('n','<leader>mo',':Mason<CR>')
+map('n','<leader>du',":DepsUpdate<CR>")
 map('n','<C-\\>',':vs<CR>')
 map('i','<C-\\>','<C-o>:vs<CR>')
 map('n','<C-x>',':q<CR>')
@@ -69,17 +68,17 @@ map('n','<C-k>',"<C-w><C-k>")
 map('n','<C-Left>',"<C-w><C-k>")
 -- map('n','<M-e>',":Neotree toggle<CR>")
 -- map('i','<M-e>',"<C-o>:Neotree toggle<CR>")
--- map('n','<leader>ff',":Telescope find_files<CR>")
--- map('n','<leader>bb',":Telescope buffers<CR>")
--- map('n','<leader>fb',":Telescope buffers<CR>")
--- map('n','<leader>fr',":Telescope frecency<CR>")
--- map('n','<leader>cc',":Telescope frecency<CR>")
--- map('n','<leader><leader>f',":Telescope frecency<CR>")
--- map('n','<leader>t',":Telescope",nsopt)
--- map('n','<M-t>',":Telescope",nsopt)
--- map('i','<M-t>',"<Esc>:Telescope",nsopt)
--- map('n',"<M-w>", ':Telescope buffers<CR>')
--- map('i','<M-w>','<C-o>:Telescope buffers<CR>')
+map('n','<leader>ff',":Telescope find_files<CR>")
+map('n','<leader>bb',":Telescope buffers<CR>")
+map('n','<leader>fb',":Telescope buffers<CR>")
+map('n','<leader>fr',":Telescope frecency<CR>")
+map('n','<leader>cc',":Telescope frecency<CR>")
+map('n','<leader><leader>f',":Telescope frecency<CR>")
+map('n','<leader>t',":Telescope",nsopt)
+map('n','<M-t>',":Telescope",nsopt)
+map('i','<M-t>',"<Esc>:Telescope",nsopt)
+map('n',"<M-w>", ':Telescope buffers<CR>')
+map('i','<M-w>','<C-o>:Telescope buffers<CR>')
 map('i','<C-P>','<Esc>:',nsopt)
 
 -- Clone 'mini.nvim' manually in a way that it gets managed by 'mini.deps'
@@ -115,7 +114,31 @@ local add, now, later = MiniDeps.add, MiniDeps.now, MiniDeps.later
 now(function()
 	require("mini.basics").setup()
 	require("mini.move").setup()
+	require('mini.pairs').setup()
+
+	add('nvim-tree/nvim-web-devicons')
+--	add('lewis6991/gitsigns.nvim')
+--	require("gitsigns").setup()
+
+	require('mini.icons').setup()
+	require('mini.git').setup()
+	require('mini.diff').setup()
+
+	require('mini.statusline').setup()
+	require('mini.bufremove').setup()
+	require('mini.comment').setup()
+	require('mini.bracketed').setup()
+	require('mini.cursorword').setup()
+	require('mini.splitjoin').setup()
+	require('mini.surround').setup()
+	require('mini.trailspace').setup({})
+
 end)
+
+			-- 		end,
+-- 		dependencies = {
+-- 		}
+
 
 -- lspとmasonまわりのあれこれ
 later(function()
@@ -127,7 +150,7 @@ later(function()
 		local hl = "DiagnosticSign" .. type
 		vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
 	end
-	
+
 	add("williamboman/mason-lspconfig.nvim")
 	require("mason-lspconfig").setup({
 		ensure_installed = {
@@ -136,9 +159,9 @@ later(function()
 		}
 	})
 	local lspconf = require("lspconfig")
-	local gcap = require("cmp_nvim_lsp").default_capabilities()
+--	local gcap = require("cmp_nvim_lsp").default_capabilities()
 	lspconf.lua_ls.setup({
-		capabilities = gcap,
+--		capabilities = gcap,
 		settings = {
 			Lua = {
 				diagnostics={
@@ -216,224 +239,202 @@ later(function()
 		}
 end)
 
--- require("lazy").setup({
--- 	{
--- 		'kkharji/lspsaga.nvim',
--- 		event="VimEnter",
--- 		config=function()
--- 			local lspsaga = require 'lspsaga'
--- 			lspsaga.setup {
--- 			debug = false,
--- 			use_saga_diagnostic_sign = true,
--- 			-- diagnostic sign
--- 			error_sign = "󰅚",
--- 			warn_sign = "󰀪",
--- 			hint_sign = "󰌶",
--- 			infor_sign = "",
--- 			diagnostic_header_icon = "   ",
--- 			-- code action title icon
--- 			code_action_icon = "󰌵",
--- 			code_action_prompt = {
--- 				enable = true,
--- 				sign = true,
--- 				sign_priority = 40,
--- 				virtual_text = true,
--- 			},
--- 			finder_definition_icon = "  ",
--- 			finder_reference_icon = "  ",
--- 			max_preview_lines = 10,
--- 			finder_action_keys = {
--- 				open = "o",
--- 				vsplit = "s",
--- 				split = "i",
--- 				quit = "q",
--- 				scroll_down = "<C-f>",
--- 				scroll_up = "<C-b>",
--- 			},
--- 			code_action_keys = {
--- 				quit = "q",
--- 				exec = "<CR>",
--- 			},
--- 			rename_action_keys = {
--- 				quit = "<C-c>",
--- 				exec = "<CR>",
--- 			},
--- 			definition_preview_icon = "󰀹",
--- 			border_style = "single",
--- 			rename_prompt_prefix = "➤",
--- 			rename_output_qflist = {
--- 				enable = false,
--- 				auto_open_qflist = false,
--- 			},
--- 			server_filetype_map = {},
--- 			diagnostic_prefix_format = "%d. ",
--- 			diagnostic_message_format = "%m %c",
--- 			highlight_prefix = false,
--- 		}
--- 		end
--- 	},
--- 	{
--- 		"nvim-treesitter/nvim-treesitter",
--- 		build = ":TSUpdateSync",
--- 		cmd = {"TSInstall","TSUpdate"},
--- 		event="BufReadPre",
--- 		config = function()
--- 			require('nvim-treesitter.configs').setup{
--- 				ensure_installed = {"lua","rust"},
--- 				auto_install=true,
--- 				highlight = {
--- 					enable = true,
--- 					disable={"rust"}
--- 				},
--- 				ident = {
--- 					enable=true,
--- 					disable={"rust"}
--- 				},
--- 			}
--- 			require 'nvim-treesitter.install'.prefer_git = false
--- 		end,
--- 	},
--- 	{
--- 		'windwp/nvim-autopairs',
--- 		event = "InsertEnter",
--- 		opts = {} -- this is equalent to setup({}) function
--- 	},
--- 	{
--- 		"lukas-reineke/indent-blankline.nvim",
--- 		event={"VeryLazy"},
--- 		config=function()
--- 			require('ibl').setup{
--- 				 indent = {
--- 					 char = {"│"},
--- 					 tab_char = {"│"}
--- 				 },
--- 			}
--- 		end,
--- 		dependencies = { 'nvim-treesitter/nvim-treesitter' },
--- 	},
--- 	{
--- 		'nvim-lua/plenary.nvim',
--- 	},
--- 	{
--- 		'nvim-telescope/telescope.nvim',
--- 		branch = '0.1.x',
--- 		--dependencies = { 'nvim-lua/plenary.nvim', },
--- 		event="VeryLazy",
--- 		cmd="Telescope",
--- 		config = function(_,_)
--- 			local actions = require("telescope.actions")
--- 			local action_layout = require('telescope.actions.layout')
--- 			local opts = {
--- 				defaults = {
--- 					mappings = {
--- 						n = {
--- 							["<M-p>"] = action_layout.toggle_preview
--- 						},
--- 						i = {
--- 							["<M-p>"] = action_layout.toggle_preview
--- 						}
--- 					}
--- 				},
--- 				pickers = {
--- 					colorscheme = {
--- 						enable_preview = true
--- 					},
--- 					buffers = {
--- 						mappings = {
--- 							i = {
--- 								["<C-d>"] = actions.delete_buffer
--- 							},
--- 							n = {
--- 								["<C-d>"] = actions.delete_buffer
--- 							}
--- 						}
--- 					}
--- 				}
--- 			}
--- 			require('telescope').setup(opts)
--- 			local builtin = require('telescope.builtin')
--- 			local map_opts = {noremap = true,silent=false}
--- 			map('n','<leader>bb',":Telescope buffers<CR>")
+later(function()
+	add('kkharji/lspsaga.nvim')
+	
+	local lspsaga = require 'lspsaga'
+	lspsaga.setup {
+		debug = false,
+		use_saga_diagnostic_sign = true,
+		-- diagnostic sign
+		error_sign = "󰅚",
+		warn_sign = "󰀪",
+		hint_sign = "󰌶",
+		infor_sign = "",
+		diagnostic_header_icon = "   ",
+		-- code action title icon
+		code_action_icon = "󰌵",
+		code_action_prompt = {
+			enable = true,
+			sign = true,
+			sign_priority = 40,
+			virtual_text = true,
+		},
+		finder_definition_icon = "  ",
+		finder_reference_icon = "  ",
+		max_preview_lines = 10,
+		finder_action_keys = {
+			open = "o",
+			vsplit = "s",
+			split = "i",
+			quit = "q",
+			scroll_down = "<C-f>",
+			scroll_up = "<C-b>",
+		},
+		code_action_keys = {
+			quit = "q",
+			exec = "<CR>",
+		},
+		rename_action_keys = {
+			quit = "<C-c>",
+			exec = "<CR>",
+		},
+		definition_preview_icon = "󰀹",
+		border_style = "single",
+		rename_prompt_prefix = "➤",
+		rename_output_qflist = {
+			enable = false,
+			auto_open_qflist = false,
+		},
+		server_filetype_map = {},
+		diagnostic_prefix_format = "%d. ",
+		diagnostic_message_format = "%m %c",
+		highlight_prefix = false,
+	}
+end)
+
+-- treesitterとblankline
+
+later(function()
+	add({
+		source="nvim-treesitter/nvim-treesitter",
+		hooks = { post_checkout = function() vim.cmd('TSUpdateSync') end },
+	})
+
+
+	require('nvim-treesitter.configs').setup{
+		ensure_installed = {"lua","rust"},
+		auto_install=true,
+		highlight = {
+			enable = true,
+			disable={"rust"}
+		},
+		ident = {
+			enable=true,
+			disable={"rust"}
+		},
+	}
+	require 'nvim-treesitter.install'.prefer_git = false
+	add("lukas-reineke/indent-blankline.nvim")
+
+	require('ibl').setup{
+		indent = {
+			char = {"│"},
+			tab_char = {"│"}
+		},
+	}
+
+end)
+
+
+-- telescope
+
+later(function()
+	add('nvim-lua/plenary.nvim')
+	add(
+		{source='nvim-telescope/telescope.nvim',
+		checkout='0.1.x'}
+	)
+
+-- local function make_fzf_native(params)
+-- 	vim.cmd("lcd " .. params.path)
+-- 	vim.cmd("!make -s")
+-- 	vim.cmd("lcd -")
+-- end
 --
--- 			map('n',"<M-w>", ':Telescope buffers<CR>')
--- 			map('i','<M-w>','<C-o>:Telescope buffers<CR>')
---
--- 			local ff = builtin.find_files
--- 			map('n','<leader>ff',ff, map_opts)
--- 			map('n','<leader>fg',builtin.live_grep,map_opts)
--- 			local fb = builtin.buffers
--- 			map('n','<leader>fb',fb,map_opts)
--- 			map('n','<leander>bb',fb,map_opts)
--- 			map('n','<leader>fh',builtin.help_tags,map_opts)
--- 			require('telescope').load_extension('fzf')
--- 			--require('telescope').load_extension('session-lens')
--- 			require("telescope").load_extension("frecency")
--- 			require("telescope").load_extension("file_browser")
--- 			require("telescope").load_extension("lazy")
--- 			require('telescope').load_extension('project')
--- 			require('telescope').load_extension("undo")
--- 			require'telescope'.load_extension('repo')
--- 			require('telescope').load_extension('possession')
---
--- 			map('n','<leader>ft',':Telescope telescope-tabs list_tabs<CR>');
--- 		end,
--- 		dependencies ={
--- 			{
--- 				'nvim-telescope/telescope-fzf-native.nvim',
--- 				build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build'
--- 			},
--- 			{
--- 				"nvim-telescope/telescope-frecency.nvim",
--- 			},
--- 			{
--- 				"nvim-telescope/telescope-file-browser.nvim",
--- 			},
--- 			{
--- 				"tsakirist/telescope-lazy.nvim"
--- 			},
--- 			{
--- 				"nvim-telescope/telescope-project.nvim"
--- 			},
--- 			{
--- 				"debugloop/telescope-undo.nvim",
--- 			},
--- 			{
--- 				'cljoly/telescope-repo.nvim'
--- 			},
--- 			{
--- 				'LukasPietzschmann/telescope-tabs',
--- 			}
--- 		}
--- 	},
--- 	{
--- 		"cshuaimin/ssr.nvim",
--- 		keys="<leader>sr",
--- 		config=function ()
--- 			local ssr = require("ssr")
--- 			ssr.setup({
--- 				border="rounded",
--- 				min_width=50,
--- 				max_width=120,
--- 				max_height=25,
--- 				keymaps={
--- 					close="q",
--- 					next_match="n",
--- 					prev_match="N",
--- 					replace_confirm="<cr>",
--- 					replace_all="<leader><cr>"
--- 				}
--- 			})
--- 			map('n','<leader>sr',ssr.open)
--- 		end
--- 	},
--- 	{
--- 		'nmac427/guess-indent.nvim',
--- 		cmd="GuessIndent",
--- 		event="InsertEnter",
--- 		config = function()
--- 			require('guess-indent').setup{}
--- 		end
--- 	},
+-- add({
+-- 	source='nvim-telescope/telescope-fzf-native.nvim',
+-- 	hooks={
+-- 		post_install = make_fzf_native,
+-- 		post_checkout = make_fzf_native
+-- 	}
+-- })
+	add("nvim-telescope/telescope-frecency.nvim")
+	add("nvim-telescope/telescope-file-browser.nvim")
+	add("tsakirist/telescope-lazy.nvim")
+	add("nvim-telescope/telescope-project.nvim")
+	add("debugloop/telescope-undo.nvim")
+	add('cljoly/telescope-repo.nvim')
+	add('LukasPietzschmann/telescope-tabs')
+
+
+	local actions = require("telescope.actions")
+	local action_layout = require('telescope.actions.layout')
+	local opts = {
+		defaults = {
+			mappings = {
+				n = {
+					["<M-p>"] = action_layout.toggle_preview
+				},
+				i = {
+					["<M-p>"] = action_layout.toggle_preview
+				}
+			}
+		},
+		pickers = {
+			colorscheme = {
+				enable_preview = true
+			},
+			buffers = {
+				mappings = {
+					i = {
+						["<C-d>"] = actions.delete_buffer
+					},
+					n = {
+						["<C-d>"] = actions.delete_buffer
+					}
+				}
+			}
+		}
+	}
+	require('telescope').setup(opts)
+	local builtin = require('telescope.builtin')
+	local map_opts = {noremap = true,silent=false}
+	map('n','<leader>bb',":Telescope buffers<CR>")
+
+	map('n',"<M-w>", ':Telescope buffers<CR>')
+	map('i','<M-w>','<C-o>:Telescope buffers<CR>')
+
+	local ff = builtin.find_files
+	map('n','<leader>ff',ff, map_opts)
+	map('n','<leader>fg',builtin.live_grep,map_opts)
+	local fb = builtin.buffers
+	map('n','<leader>fb',fb,map_opts)
+	map('n','<leander>bb',fb,map_opts)
+	map('n','<leader>fh',builtin.help_tags,map_opts)
+-- require('telescope').load_extension('fzf')
+-- require('telescope').load_extension('session-lens')
+	require("telescope").load_extension("frecency")
+	require("telescope").load_extension("file_browser")
+	require('telescope').load_extension('project')
+	require('telescope').load_extension("undo")
+	require'telescope'.load_extension('repo')
+--	require('telescope').load_extension('possession')
+
+	map('n','<leader>ft',':Telescope telescope-tabs list_tabs<CR>')
+end)
+later(function()
+	add("cshuaimin/ssr.nvim")
+	local ssr = require("ssr")
+	ssr.setup({
+		border="rounded",
+		min_width=50,
+		max_width=120,
+		max_height=25,
+		keymaps={
+			close="q",
+			next_match="n",
+			prev_match="N",
+			replace_confirm="<cr>",
+			replace_all="<leader><cr>"
+		}
+	})
+	map('n','<leader>sr',ssr.open)
+end)
+later(function()
+	add('nmac427/guess-indent.nvim')
+	require('guess-indent').setup{}
+end)
 -- 	{
 -- 		'hrsh7th/nvim-cmp',
 -- 		event={"InsertEnter","CmdlineEnter"},
