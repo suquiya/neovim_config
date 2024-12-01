@@ -24,6 +24,7 @@ g.loaded_tutor_mode_plugin = 1
 
 vim.opt.tabstop=3
 vim.opt.shiftwidth=3
+vim.opt.swapfile = false
 
 local map = function(mode,keys,to,_opts)
 	local opts = {noremap = true,silent=true}
@@ -58,16 +59,16 @@ map('n','<C-x>',':q<CR>')
 map('n','<C-c>',':q!<CR>')
 map('n','<leader>qq',':q<CR>')
 map('n','<leader>qa',':qa<CR>')
--- map('n','gx',":Neotree toggle<CR>")
--- map('n','<leader>ex',":Neotree toggle<CR>")
--- map('n','<leader>eb',":Neotree buffer current<CR>")
--- map('n','<leader>eg',":Neotree git_status current<CR>")
+map('n','gx',":Neotree toggle<CR>")
+map('n','<leader>ex',":Neotree toggle<CR>")
+map('n','<leader>eb',":Neotree buffer current<CR>")
+map('n','<leader>eg',":Neotree git_status current<CR>")
 map('n','<C-l>',"<C-w><C-l>")
 map('n','<C-Right>',"<C-w><C-l>")
 map('n','<C-k>',"<C-w><C-k>")
 map('n','<C-Left>',"<C-w><C-k>")
--- map('n','<M-e>',":Neotree toggle<CR>")
--- map('i','<M-e>',"<C-o>:Neotree toggle<CR>")
+map('n','<M-e>',":Neotree toggle<CR>")
+map('i','<M-e>',"<C-o>:Neotree toggle<CR>")
 map('n','<leader>ff',":Telescope find_files<CR>")
 map('n','<leader>bb',":Telescope buffers<CR>")
 map('n','<leader>fb',":Telescope buffers<CR>")
@@ -135,9 +136,6 @@ now(function()
 
 end)
 
-			-- 		end,
--- 		dependencies = {
--- 		}
 
 
 -- lspとmasonまわりのあれこれ
@@ -241,7 +239,7 @@ end)
 
 later(function()
 	add('kkharji/lspsaga.nvim')
-	
+
 	local lspsaga = require 'lspsaga'
 	lspsaga.setup {
 		debug = false,
@@ -323,6 +321,9 @@ later(function()
 			tab_char = {"│"}
 		},
 	}
+
+	vim.opt.foldmethod = "expr"
+	vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 
 end)
 
@@ -431,9 +432,13 @@ later(function()
 	})
 	map('n','<leader>sr',ssr.open)
 end)
+
 later(function()
 	add('nmac427/guess-indent.nvim')
 	require('guess-indent').setup{}
+end)
+
+later(function()
 end)
 -- 	{
 -- 		'hrsh7th/nvim-cmp',
@@ -571,24 +576,6 @@ end)
 -- 			--"rcarriga/nvim-notify",
 -- 		}
 -- 	},
--- 	--[[{
--- 		'akinsho/bufferline.nvim',
--- 		version = "*",
--- 		opts = {},
--- 		config = function(_,_opts)
--- 			require("bufferline").setup(_opts)
--- 		end,
--- 		keys = "<leader>bl";
--- 		dependencies = {
--- 			{
--- 				'nvim-tree/nvim-web-devicons',
--- 			},
--- 			--{
--- 			--	"nvim-neo-tree/neo-tree.nvim",
--- 			--}
--- 		}
--- 	},]]--
--- 	{
 -- 		'jedrzejboczar/possession.nvim',
 -- 		event="VimEnter",
 -- 		opts={
@@ -635,27 +622,6 @@ end)
 -- 			}
 -- 		}
 -- 	},
--- 	{
--- 		'echasnovski/mini.nvim',
--- 		version = false,
--- 		event={"BufEnter","VeryLazy"},
--- 		config=function(_,_)
--- 			require('mini.statusline').setup()
--- 			require('mini.bufremove').setup()
--- 			require('mini.comment').setup()
--- 			require('mini.bracketed').setup()
--- 			require('mini.cursorword').setup()
--- 			require('mini.move').setup()
--- 			require('mini.splitjoin').setup()
--- 			require('mini.surround').setup()
--- 			require('mini.trailspace').setup({})
--- 		end,
--- 		dependencies = {
--- 			{'nvim-tree/nvim-web-devicons'},
--- 			{'lewis6991/gitsigns.nvim',opts={}}
--- 		}
--- 	},
--- 	{
 -- 		'dstein64/nvim-scrollview',
 -- 		event='BufEnter',
 -- 		config=function ()
@@ -680,13 +646,6 @@ end)
 -- 			require('modes').setup()
 -- 		end
 -- 	},
--- 	--[[{
--- 		'rmagatti/auto-session',
--- 		event="VimEnter",
--- 		opts = {
--- 			log_level = "error",
--- 		}
--- 	},]]--
 -- 	{
 -- 		'akinsho/toggleterm.nvim',
 -- 		version = "*",
@@ -705,9 +664,6 @@ end)
 -- 		event="VeryLazy",
 -- 		opts = {},
 -- 	}
--- },{
--- 	defaults={lazy=true}
--- })
 
 vim.opt.number = true
 
