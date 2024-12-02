@@ -208,7 +208,7 @@ end)
 later(function()
 		add({
 			source='mrcjkb/rustaceanvim',
-			checkout='v5.15.0'
+			checkout='v5.15.4'
 		})
 
 		vim.g.rustaceanvim = {
