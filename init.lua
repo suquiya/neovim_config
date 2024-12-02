@@ -109,6 +109,10 @@ map('n','<leader>bl',toggle_buffer_line)
 
 
 vim.opt.whichwrap = 'h,l,<,>,[,],~'
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldlevel = 99
+-- vim.opt.foldlevelstart = 2
 
 local add, now, later = MiniDeps.add, MiniDeps.now, MiniDeps.later
 
@@ -322,8 +326,6 @@ later(function()
 		},
 	}
 
-	vim.opt.foldmethod = "expr"
-	vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 
 end)
 
@@ -439,90 +441,87 @@ later(function()
 end)
 
 later(function()
+	add('hrsh7th/nvim-cmp')
+	add('hrsh7th/cmp-nvim-lsp')
+	add("hrsh7th/cmp-nvim-lsp-signature-help")
+	add('hrsh7th/cmp-buffer')
+	add('hrsh7th/cmp-path')
+	add("hrsh7th/cmp-nvim-lua")
+	add('hrsh7th/cmp-cmdline')
+	add("L3MON4D3/LuaSnip")
+	add("saadparwaiz1/cmp_luasnip")
+
+	-- completion setup
+	local cmp = require('cmp')
+	cmp.setup({
+		snippet = {
+			expand = function(args)
+				require("luasnip").lsp_expand(args.body)
+			end,
+		},
+		window = {
+			completion = cmp.config.window.bordered({
+				col_offset = 0,
+				side_padding= 0
+			}),
+			documentation = cmp.config.window.bordered(),
+		},
+		mapping = cmp.mapping.preset.insert({
+			['<S-Tab>'] = cmp.mapping.select_prev_item(),
+			['<Tab>'] = cmp.mapping.select_next_item(),
+			['<C-S-f>'] = cmp.mapping.scroll_docs(-4),
+			['<C-f>'] = cmp.mapping.scroll_docs(4),
+			['<C-Space>'] = cmp.mapping.complete(),
+			['<C-e>'] = cmp.mapping.close(),
+			['<CR>'] = cmp.mapping.confirm { select = false }
+		}),
+		sources = cmp.config.sources({
+			{ name = 'path' }, -- file paths
+			{ name = 'nvim_lsp'}, -- from language server
+			{ name = "nvim_lsp_signature_help" },
+			{ name = 'nvim_lua'}, -- complete neovim's Lua runtime API such vim.lsp.*
+			{ name = 'buffer',keyword_length = 3}, -- source current buffer
+			{ name = 'calc'}, -- source for math calculation
+		}),
+		preselect = cmp.PreselectMode.None,
+		formatting = {
+			fields = {'abbr','kind','menu'},
+			format = function(entry,item)
+				local src = {
+					nvim_lsp = 'lsp',
+					luasnip = 'snip',
+					buffer = 'buf',
+					path = 'path',
+					cmdline = 'cmd',
+					nvim_lua = 'lua',
+					calc = 'calc',
+					nvim_lsp_signature_help = 'nlsh'
+				};
+				item.menu = src[entry.source.name]
+				return item
+			end,
+		}
+	})
+
+	cmp.setup.cmdline({'/','?'},{
+		mapping = cmp.mapping.preset.cmdline(),
+		sources = {
+			{name='buffer'}
+		}
+	})
+
+	cmp.setup.cmdline(':',{
+		mapping = cmp.mapping.preset.cmdline(),
+		sources = cmp.config.sources(
+		{
+			{name='path'}
+		},
+		{
+			{name="cmdline"}
+		})
+	})
 end)
--- 	{
--- 		'hrsh7th/nvim-cmp',
--- 		event={"InsertEnter","CmdlineEnter"},
--- 		config = function()
--- 			-- completion setup
--- 			local cmp = require('cmp')
--- 			cmp.setup({
--- 				snippet = {
--- 					expand = function(args)
--- 						require("luasnip").lsp_expand(args.body)
--- 					end,
--- 				},
--- 				window = {
--- 					completion = cmp.config.window.bordered({
--- 						col_offset = 0,
--- 						side_padding= 0
--- 					}),
--- 					documentation = cmp.config.window.bordered(),
--- 				},
--- 				mapping = cmp.mapping.preset.insert({
--- 					['<S-Tab>'] = cmp.mapping.select_prev_item(),
--- 					['<Tab>'] = cmp.mapping.select_next_item(),
--- 					['<C-S-f>'] = cmp.mapping.scroll_docs(-4),
--- 					['<C-f>'] = cmp.mapping.scroll_docs(4),
--- 					['<C-Space>'] = cmp.mapping.complete(),
--- 					['<C-e>'] = cmp.mapping.close(),
--- 					['<CR>'] = cmp.mapping.confirm { select = false }
--- 				}),
--- 				sources = cmp.config.sources({
--- 					{ name = 'path' }, -- file paths
--- 					{ name = 'nvim_lsp'}, -- from language server
--- 					{ name = "nvim_lsp_signature_help" },
--- 					{ name = 'nvim_lua'}, -- complete neovim's Lua runtime API such vim.lsp.*
--- 					{ name = 'buffer',keyword_length = 3}, -- source current buffer
--- 					{ name = 'calc'}, -- source for math calculation
--- 				}),
--- 				preselect = cmp.PreselectMode.None,
--- 				formatting = {
--- 					fields = {'abbr','kind','menu'},
--- 					format = function(entry,item)
--- 						local src = {
--- 							nvim_lsp = 'lsp',
--- 							luasnip = 'snip',
--- 							buffer = 'buf',
--- 							path = 'path',
--- 							cmdline = 'cmd',
--- 							nvim_lua = 'lua',
--- 							calc = 'calc',
--- 							nvim_lsp_signature_help = 'nlsh'
--- 						};
--- 						item.menu = src[entry.source.name]
--- 						return item
--- 					end,
--- 				}
--- 			})
---
--- 			cmp.setup.cmdline({'/','?'},{
--- 				mapping = cmp.mapping.preset.cmdline(),
--- 				sources = {
--- 					{name='buffer'}
--- 				}
--- 			})
---
--- 			cmp.setup.cmdline(':',{
--- 				mapping = cmp.mapping.preset.cmdline(),
--- 				sources = cmp.config.sources(
--- 				{
--- 					{name='path'}
--- 				},
--- 				{
--- 					{name="cmdline"}
--- 				})
--- 			})
--- 		end
 -- 	},
--- 	{'hrsh7th/cmp-nvim-lsp',event="InsertEnter"},
--- 	{"hrsh7th/cmp-nvim-lsp-signature-help",event="InsertEnter"},
--- 	{'hrsh7th/cmp-buffer',event={"InsertEnter","CmdlineEnter"}},
--- 	{'hrsh7th/cmp-path',event={"InsertEnter","CmdlineEnter"}},
--- 	{ "hrsh7th/cmp-nvim-lua",event="InsertEnter *.lua"},
--- 	{'hrsh7th/cmp-cmdline',event="CmdlineEnter"},
--- 	{ "L3MON4D3/LuaSnip",event="InsertEnter"},
--- 	{ "saadparwaiz1/cmp_luasnip",event="InsertEnter"},
 -- 	{
 -- 		"kwkarlwang/bufresize.nvim",
 -- 		event="VeryLazy"
