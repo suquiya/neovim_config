@@ -580,147 +580,139 @@ vim.api.nvim_create_autocmd({"BufEnter"},{
 	group = "init_lua",
 	once = true,
 	callback = function ()
-		
+		require('scrollview').setup({
+			scrollview_signs_on_startup={'all'}
+		})
 	end
 })
--- 		event='BufEnter',
--- 		config=function ()
-	-- 			require('scrollview').setup({
-		-- 				scrollview_signs_on_startup={'all'}
-		-- 			})
-		-- 		end
-		-- 	},
-		-- 	{
-			-- 		"folke/which-key.nvim",
-			-- 		cmd = "WhichKey",
-			-- 		config = function()
-				-- 			vim.o.timeout = true
-				-- 			vim.o.timeoutlen = 300
-				-- 		end,
-				-- 		opts = {},
-				-- 	},
-				-- 	{
-					-- 		'mvllow/modes.nvim',
-					-- 		tag = 'v0.2.0',
-					-- 		config = function()
-						-- 			require('modes').setup()
-						-- 		end
-						-- 	},
-						-- 	{
-							-- 		'akinsho/toggleterm.nvim',
-							-- 		version = "*",
-							-- 		event="VimEnter",
-							-- 		config=function ()
-								-- 			require("toggleterm").setup({
-									-- 				open_mapping = [[<M-t>]],
-									-- 			})
-									-- 		end
-									-- 	},
-									-- 	-- カラースキームたち
-									-- 	{ "EdenEast/nightfox.nvim",event="VeryLazy" },
-									-- 	{'marko-cerovac/material.nvim',event="VeryLazy"},
-									-- 	{
-										-- 		"folke/tokyonight.nvim",
-										-- 		event="VeryLazy",
-										-- 		opts = {},
-										-- 	}
-										--telescope
-										later(function()
-											add(
-											{source='nvim-telescope/telescope.nvim',
-											checkout='0.1.x'}
-											)
 
-											-- local function make_fzf_native(params)
-												-- 	vim.cmd("lcd " .. params.path)
-												-- 	vim.cmd("!make -s")
-												-- 	vim.cmd("lcd -")
-												-- end
-												--
-												-- add({
-													-- 	source='nvim-telescope/telescope-fzf-native.nvim',
-													-- 	hooks={
-														-- 		post_install = make_fzf_native,
-														-- 		post_checkout = make_fzf_native
-														-- 	}
-														-- })
-														add("nvim-telescope/telescope-frecency.nvim")
-														add("nvim-telescope/telescope-file-browser.nvim")
-														add("nvim-telescope/telescope-project.nvim")
-														add("debugloop/telescope-undo.nvim")
-														add('cljoly/telescope-repo.nvim')
-														add('LukasPietzschmann/telescope-tabs')
+vim.api.nvim_create_autocmd({"CmdUndefined"},{
+	group = "init_lua",
+	once = true,
+	callbacl = function ()
+		add("folke/which-key.nvim")
+		require("which-key").setup()
+	end
+})
+-- 	{
+-- 		'mvllow/modes.nvim',
+-- 		tag = 'v0.2.0',
+-- 		config = function()
+-- 			require('modes').setup()
+-- 		end
+-- 	}
+later(function ()
+	add('akinsho/toggleterm.nvim')
+	require("toggleterm").setup({
+		open_mapping = [[<M-t>]],
+	})
+end)
+--telescope
+later(function()
+	add(
+	{source='nvim-telescope/telescope.nvim',
+	checkout='0.1.x'}
+	)
+
+	--[[ local function make_fzf_native(params)
+		vim.cmd("lcd " .. params.path)
+		vim.cmd("!make -s")
+		vim.cmd("lcd -")
+	end
+
+	add(
+	{
+		source='nvim-telescope/telescope-fzf-native.nvim',
+		hooks={
+			post_install = make_fzf_native,
+			post_checkout = make_fzf_native
+		}
+	}
+	)	]] --
+	add("nvim-telescope/telescope-frecency.nvim")
+	add("nvim-telescope/telescope-file-browser.nvim")
+	add("nvim-telescope/telescope-project.nvim")
+	add("debugloop/telescope-undo.nvim")
+	add('cljoly/telescope-repo.nvim')
+	add('LukasPietzschmann/telescope-tabs')
 
 
-														local actions = require("telescope.actions")
-														local action_layout = require('telescope.actions.layout')
-														local opts = {
-															defaults = {
-																mappings = {
-																	n = {
-																		["<M-p>"] = action_layout.toggle_preview
-																	},
-																	i = {
-																		["<M-p>"] = action_layout.toggle_preview
-																	}
-																}
-															},
-															pickers = {
-																colorscheme = {
-																	enable_preview = true
-																},
-																buffers = {
-																	mappings = {
-																		i = {
-																			["<C-d>"] = actions.delete_buffer
-																		},
-																		n = {
-																			["<C-d>"] = actions.delete_buffer
-																		}
-																	}
-																}
-															}
-														}
-														require('telescope').setup(opts)
-														local builtin = require('telescope.builtin')
-														local map_opts = {noremap = true,silent=false}
-														map('n','<leader>bb',":Telescope buffers<CR>")
+	local actions = require("telescope.actions")
+	local action_layout = require('telescope.actions.layout')
+	local opts = {
+		defaults = {
+			mappings = {
+				n = {
+					["<M-p>"] = action_layout.toggle_preview
+				},
+				i = {
+					["<M-p>"] = action_layout.toggle_preview
+				}
+			}
+		},
+		pickers = {
+			colorscheme = {
+				enable_preview = true
+			},
+			buffers = {
+				mappings = {
+					i = {
+						["<C-d>"] = actions.delete_buffer
+					},
+					n = {
+						["<C-d>"] = actions.delete_buffer
+					}
+				}
+			}
+		}
+	}
+	require('telescope').setup(opts)
+	local builtin = require('telescope.builtin')
+	local map_opts = {noremap = true,silent=false}
+	map('n','<leader>bb',":Telescope buffers<CR>")
 
-														map('n',"<M-w>", ':Telescope buffers<CR>')
-														map('i','<M-w>','<C-o>:Telescope buffers<CR>')
+	map('n',"<M-w>", ':Telescope buffers<CR>')
+	map('i','<M-w>','<C-o>:Telescope buffers<CR>')
 
-														local ff = builtin.find_files
-														map('n','<leader>ff',ff, map_opts)
-														map('n','<leader>fg',builtin.live_grep,map_opts)
-														local fb = builtin.buffers
-														map('n','<leader>fb',fb,map_opts)
-														map('n','<leander>bb',fb,map_opts)
-														map('n','<leader>fh',builtin.help_tags,map_opts)
-														-- require('telescope').load_extension('session-lens')
-														require("telescope").load_extension("frecency")
-														require("telescope").load_extension("file_browser")
-														require('telescope').load_extension('project')
-														require('telescope').load_extension("undo")
-														require'telescope'.load_extension('repo')
-														--	require('telescope').load_extension('possession')
+	local ff = builtin.find_files
+	map('n','<leader>ff',ff, map_opts)
+	map('n','<leader>fg',builtin.live_grep,map_opts)
+	local fb = builtin.buffers
+	map('n','<leader>fb',fb,map_opts)
+	map('n','<leander>bb',fb,map_opts)
+	map('n','<leader>fh',builtin.help_tags,map_opts)
+	-- require('telescope').load_extension('session-lens')
+	require("telescope").load_extension("frecency")
+	require("telescope").load_extension("file_browser")
+	require('telescope').load_extension('project')
+	require('telescope').load_extension("undo")
+	require'telescope'.load_extension('repo')
+	--	require('telescope').load_extension('possession')
 
-														map('n','<leader>ft',':Telescope telescope-tabs list_tabs<CR>')
-													end)
+	map('n','<leader>ft',':Telescope telescope-tabs list_tabs<CR>')
+end)
+-- 	-- カラースキームたち
+-- 	{ "EdenEast/nightfox.nvim",event="VeryLazy" },
+-- 	{'marko-cerovac/material.nvim',event="VeryLazy"},
+-- 	{
+	-- 		"folke/tokyonight.nvim",
+	-- 		event="VeryLazy",
+	-- 	}
 
-													vim.opt.number = true
+	vim.opt.number = true
 
-													vim.opt.list = true
-													vim.opt.listchars:append "space:."
-													vim.opt.listchars:append "eol:↴"
-													vim.opt.listchars:append "tab:--"
-													vim.opt.listchars:append "trail:*"
+	vim.opt.list = true
+	vim.opt.listchars:append "space:."
+	vim.opt.listchars:append "eol:↴"
+	vim.opt.listchars:append "tab:--"
+	vim.opt.listchars:append "trail:*"
 
 
-													if vim.g.neovide then
-														vim.o.guifont="Cascadia_Code_NF,PlemolJP_Console_NF:h14"
-														--'Cascadia Code','Cascadia Code','Martian Mono Std Lt','PlemolJP Console NF','FantasqueSansMono NF','Lekton NF','JetBrainsMono NF','ShureTechMono NF','Hasklug NF','Inconsolata NF','Liga Hack','UbuntuMono NF','LiterationMono NF','Hack NF',HackGen,Cica,'Myrica M', Consolas, monospace
-														vim.opt.linespace=1
-														vim.g.neovide_cursor_animation_length = 0
-														vim.g.neovide_scroll_animation_length = 0.1
-														vim.g.neovide_cursor_trail_size = 0
-													end
+	if vim.g.neovide then
+		vim.o.guifont="Cascadia_Code_NF,PlemolJP_Console_NF:h14"
+		--'Cascadia Code','Cascadia Code','Martian Mono Std Lt','PlemolJP Console NF','FantasqueSansMono NF','Lekton NF','JetBrainsMono NF','ShureTechMono NF','Hasklug NF','Inconsolata NF','Liga Hack','UbuntuMono NF','LiterationMono NF','Hack NF',HackGen,Cica,'Myrica M', Consolas, monospace
+		vim.opt.linespace=1
+		vim.g.neovide_cursor_animation_length = 0
+		vim.g.neovide_scroll_animation_length = 0.1
+		vim.g.neovide_cursor_trail_size = 0
+	end
