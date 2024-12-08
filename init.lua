@@ -300,7 +300,7 @@ end)
 now(function()
 	add({
 		source='mrcjkb/rustaceanvim',
-		checkout='v5.15.4'
+		checkout='v5.17.1'
 	})
 
 	vim.g.rustaceanvim = {
@@ -589,7 +589,7 @@ vim.api.nvim_create_autocmd({"BufEnter"},{
 vim.api.nvim_create_autocmd({"CmdUndefined"},{
 	group = "init_lua",
 	once = true,
-	callbacl = function ()
+	callback = function ()
 		add("folke/which-key.nvim")
 		require("which-key").setup()
 	end
@@ -691,28 +691,28 @@ later(function()
 
 	map('n','<leader>ft',':Telescope telescope-tabs list_tabs<CR>')
 end)
--- 	-- カラースキームたち
--- 	{ "EdenEast/nightfox.nvim",event="VeryLazy" },
--- 	{'marko-cerovac/material.nvim',event="VeryLazy"},
--- 	{
-	-- 		"folke/tokyonight.nvim",
-	-- 		event="VeryLazy",
-	-- 	}
 
-	vim.opt.number = true
+-- カラースキームたち
+later(function ()
+	add( "EdenEast/nightfox.nvim" )
+	add('marko-cerovac/material.nvim')
+	add("folke/tokyonight.nvim")
+end)
 
-	vim.opt.list = true
-	vim.opt.listchars:append "space:."
-	vim.opt.listchars:append "eol:↴"
-	vim.opt.listchars:append "tab:--"
-	vim.opt.listchars:append "trail:*"
+vim.opt.number = true
+
+vim.opt.list = true
+vim.opt.listchars:append "space:."
+vim.opt.listchars:append "eol:↴"
+vim.opt.listchars:append "tab:--"
+vim.opt.listchars:append "trail:*"
 
 
-	if vim.g.neovide then
-		vim.o.guifont="Cascadia_Code_NF,PlemolJP_Console_NF:h14"
-		--'Cascadia Code','Cascadia Code','Martian Mono Std Lt','PlemolJP Console NF','FantasqueSansMono NF','Lekton NF','JetBrainsMono NF','ShureTechMono NF','Hasklug NF','Inconsolata NF','Liga Hack','UbuntuMono NF','LiterationMono NF','Hack NF',HackGen,Cica,'Myrica M', Consolas, monospace
-		vim.opt.linespace=1
-		vim.g.neovide_cursor_animation_length = 0
-		vim.g.neovide_scroll_animation_length = 0.1
-		vim.g.neovide_cursor_trail_size = 0
-	end
+if vim.g.neovide then
+	vim.o.guifont="Cascadia_Code_NF,PlemolJP_Console_NF:h14"
+	--'Cascadia Code','Cascadia Code','Martian Mono Std Lt','PlemolJP Console NF','FantasqueSansMono NF','Lekton NF','JetBrainsMono NF','ShureTechMono NF','Hasklug NF','Inconsolata NF','Liga Hack','UbuntuMono NF','LiterationMono NF','Hack NF',HackGen,Cica,'Myrica M', Consolas, monospace
+	vim.opt.linespace=1
+	vim.g.neovide_cursor_animation_length = 0
+	vim.g.neovide_scroll_animation_length = 0.1
+	vim.g.neovide_cursor_trail_size = 0
+end
