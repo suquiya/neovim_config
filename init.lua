@@ -35,7 +35,7 @@ local map = function(mode,keys,to,_opts)
 end
 vim.g.mapleader=" "
 
--- vim.o.guicursor = "n-v-c-sm-i-ci-ve:block,r-cr-o:hor20"
+vim.o.guicursor = "n-v-c-sm-i-ci-ve:block,r-cr-o:hor20"
 
 local nsopt = {silent=false}
 map('i','<C-j><C-k>','<Esc>')
@@ -72,7 +72,7 @@ map('n','<leader>ff',":Telescope find_files<CR>")
 map('n','<leader>bb',":Telescope buffers<CR>")
 map('n','<leader>fb',":Telescope buffers<CR>")
 map('n','<leader>fr',":Telescope frecency<CR>")
-map('n','<leader>cc',":Telescope frecency<CR>")
+map('n','<leader>cc',":Telescope colorscheme<CR>")
 map('n','<leader><leader>f',":Telescope frecency<CR>")
 map('n','<leader>t',":Telescope",nsopt)
 map('n','<M-t>',":Telescope",nsopt)
@@ -562,6 +562,16 @@ now(function()
 	require("possession").setup(_opts)
 end)
 
+now(function ()
+	vim.api.nvim_create_autocmd({"BufEnter"},{
+		group = "init_lua",
+		once=true,
+		callback=function ()
+			add('Exafunction/codeium.vim')
+		end
+	})
+end)
+
 later(function()
 	now(load_neo_tree)
 end)
@@ -588,10 +598,12 @@ vim.api.nvim_create_autocmd({"BufEnter"},{
 
 vim.api.nvim_create_autocmd({"CmdUndefined"},{
 	group = "init_lua",
+	pattern="WhickKey",
 	once = true,
 	callback = function ()
 		add("folke/which-key.nvim")
 		require("which-key").setup()
+		vim.cmd("WhickKey")
 	end
 })
 -- 	{
@@ -692,11 +704,36 @@ later(function()
 	map('n','<leader>ft',':Telescope telescope-tabs list_tabs<CR>')
 end)
 
--- カラースキームたち
+-- colorscheme
 later(function ()
 	add( "EdenEast/nightfox.nvim" )
 	add('marko-cerovac/material.nvim')
 	add("folke/tokyonight.nvim")
+	add({ source="rose-pine/neovim", name = "rose-pine" })
+	add({source='luisiacc/gruvbox-baby',checkout='main'})
+	add({ source='Everblush/nvim', name = 'everblush' })
+	add({ source = "catppuccin/nvim", name = "catppuccin" })
+
+	vim.g.everforest_background = "hard"
+
+	add("sainnhe/everforest")
+-- vim.g.sonokai_transparent_background = 0
+	vim.g.sonokai_style="espresso"
+	vim.g.sonokai_colors_override = {black={'#1c1c1c','232'}, bg_dim = {'#212121', '232'}, bg0={'#2b2b2b','235'}, bg1={'#333333','236'}}
+
+	add("sainnhe/sonokai")
+	vim.cmd.colorscheme("sonokai")
+	add("ellisonleao/gruvbox.nvim")
+	add("olimorris/onedarkpro.nvim")
+	add('navarasu/onedark.nvim')
+	-- Lua
+	require('onedark').setup {
+		style = 'darker'
+	}
+
+	add("loctvl842/monokai-pro.nvim")
+	require("monokai-pro").setup()
+	add("rebelot/kanagawa.nvim")
 end)
 
 vim.opt.number = true
