@@ -137,6 +137,7 @@ now(function()
 	require('mini.splitjoin').setup()
 	require('mini.surround').setup()
 	require('mini.trailspace').setup({})
+	require('mini.sessions').setup({})
 
 end)
 
@@ -300,7 +301,7 @@ end)
 now(function()
 	add({
 		source='mrcjkb/rustaceanvim',
-		checkout='v5.17.1'
+		checkout='v5.18.1'
 	})
 
 	vim.g.rustaceanvim = {
@@ -313,7 +314,7 @@ now(function()
 		server = {
 			on_attach = function(_,bufnr)
 				-- Hover actions
-				vim.keymap.set("n","<C-space>", vim.lsp.buf.hover(), {buffer = bufnr})
+				vim.keymap.set("n","<C-space>", vim.lsp.buf.hover, {buffer = bufnr})
 				-- Code action groups
 				local codeAction = function ()
 					vim.cmd.RustLsp('codeAction')
@@ -567,7 +568,13 @@ now(function ()
 		group = "init_lua",
 		once=true,
 		callback=function ()
-			add('Exafunction/codeium.vim')
+			add("Exafunction/codeium.nvim")
+
+			require("codeium").setup({
+				virtual_text = {
+					enabled = true
+				}
+			})
 		end
 	})
 end)
@@ -708,7 +715,7 @@ end)
 later(function ()
 	add( "EdenEast/nightfox.nvim" )
 	add('marko-cerovac/material.nvim')
-	add("folke/tokyonight.nvim")
+--	add("folke/tokyonight.nvim")
 	add({ source="rose-pine/neovim", name = "rose-pine" })
 	add({source='luisiacc/gruvbox-baby',checkout='main'})
 	add({ source='Everblush/nvim', name = 'everblush' })
@@ -719,7 +726,7 @@ later(function ()
 	add("sainnhe/everforest")
 -- vim.g.sonokai_transparent_background = 0
 	vim.g.sonokai_style="espresso"
-	vim.g.sonokai_colors_override = {black={'#1c1c1c','232'}, bg_dim = {'#212121', '232'}, bg0={'#2b2b2b','235'}, bg1={'#333333','236'}}
+	vim.g.sonokai_colors_override = {black={'#1c1c1c','232'}, bg_dim = {'#212121', '232'}, bg0={'#222222','235'}, bg1={'#333333','236'}}
 
 	add("sainnhe/sonokai")
 	vim.cmd.colorscheme("sonokai")
